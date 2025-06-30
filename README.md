@@ -39,7 +39,7 @@ VkBasalt is a Vulkan post-processing layer that allows you to apply various visu
 
 1. **Download** the script to your Steam Deck:
    ```bash
-   wget https://github.com/Vaddum/vkbasalt-manager/blob/main/vkbasalt_manager.sh
+   wget https://github.com/Vaddum/vkbasalt-manager/blob/2fe71890d7657956606acfb82fa47fe572bdc266/vkbasalt_manager.sh
    chmod +x vkbasalt_manager.sh
    ```
 
