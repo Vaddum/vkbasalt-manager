@@ -16,6 +16,7 @@ NC='\033[0m' # No Color
 CONFIG_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf"
 BACKUP_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf.backup"
 SHADER_PATH="/home/deck/.config/reshade/Shaders"
+TEXTURE_PATH="/home/deck/.config/reshade/Textures"
 
 # Display header
 show_header() {
