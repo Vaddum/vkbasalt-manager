@@ -99,7 +99,7 @@ install_vkbasalt() {
     
     # Install shaders
     echo -e "${BLUE}🎨 Installing shaders...${NC}"
-    if wget -q https://github.com/Vaddum/vkbasalt-shaders/archive/refs/heads/main.zip; then
+    if wget -q https://codeload.github.com/Vaddum/vkbasalt-manager/zip/refs/heads/vkbasalt-manager-main.zip; then
         echo -e "${GREEN}✓ Download successful${NC}"
         if unzip -q main.zip; then
             echo -e "${GREEN}✓ Extraction successful${NC}"
