@@ -16,7 +16,6 @@ NC='\033[0m' # No Color
 CONFIG_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf"
 BACKUP_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf.backup"
 SHADER_PATH="/home/deck/.config/reshade/Shaders"
-TEXTURE_PATH="/home/deck/.config/reshade/Textures"
 
 # Display header
 show_header() {
@@ -99,7 +98,7 @@ install_vkbasalt() {
     
     # Install shaders
     echo -e "${BLUE}🎨 Installing shaders...${NC}"
-    if wget -q https://github.com/Vaddum/vkbasalt-shaders/archive/refs/heads/main.zip; then
+    if wget -q https://github.com/Vaddum/vkbasalt-manager/archive/refs/heads/main.zip; then
         echo -e "${GREEN}✓ Download successful${NC}"
         if unzip -q main.zip; then
             echo -e "${GREEN}✓ Extraction successful${NC}"
