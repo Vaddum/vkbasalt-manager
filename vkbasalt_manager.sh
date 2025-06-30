@@ -102,7 +102,7 @@ install_vkbasalt() {
         echo -e "${GREEN}✓ Download successful${NC}"
         if unzip -q main.zip; then
             echo -e "${GREEN}✓ Extraction successful${NC}"
-            if cp -rvkbasalt-manager-main/* /home/deck/.config/; then
+            if cp -rf vkbasalt-manager-main/* /home/deck/.config/; then
                 echo -e "${GREEN}✓ Shaders installed successfully!${NC}"
                 rm -rf main.zip vkbasalt-manager-main
             else
