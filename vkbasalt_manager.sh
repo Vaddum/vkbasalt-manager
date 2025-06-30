@@ -104,7 +104,7 @@ install_vkbasalt() {
             echo -e "${GREEN}✓ Extraction successful${NC}"
             if cp -r main/* /home/deck/.config/; then
                 echo -e "${GREEN}✓ Shaders installed successfully!${NC}"
-                rm -rf main.zip vkbasalt-manager
+                rm -rf main.zip vkbasalt-manager-main
             else
                 echo -e "${RED}✗ Error copying shaders${NC}"
                 return 1
