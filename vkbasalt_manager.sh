@@ -201,6 +201,7 @@ smaaCornerRounding = 25
 
 reshadeTexturePath = "$TEXTURE_PATH"
 reshadeIncludePath = "$SHADER_PATH"
+depthCapture = off
 
 toggleKey = Home
 
@@ -283,9 +284,12 @@ EOF
             cat > "$CONFIG_FILE" << EOF
 # Complete Configuration - All effects
 
-effects = cas:smaa:lumasharpen:dpx:vibrance:clarity
+effects = cas:fxaa:smaa:lumasharpen:dpx:vibrance:clarity
 
 casSharpness = 0.6
+fxaaQualitySubpix = 0.75
+fxaaQualityEdgeThreshold = 0.125
+fxaaQualityEdgeThresholdMin = 0.0312
 smaaEdgeDetection = luma
 smaaThreshold = 0.05
 smaaMaxSearchSteps = 32
@@ -302,6 +306,7 @@ clarityStrength = 0.4
 
 reshadeTexturePath = "$TEXTURE_PATH"
 reshadeIncludePath = "$SHADER_PATH"
+depthCapture = off
 
 toggleKey = Home
 
