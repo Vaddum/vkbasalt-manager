@@ -59,7 +59,7 @@ VkBasalt is a Vulkan post-processing layer that allows you to apply various visu
 
 ## 🎮 Usage
 
-### 🎯 Enabling VkBasalt for Games
+### 🎯 Enabling VkBasalt for Games (if needed)
 
 1. 🖥️ Open Steam in **Desktop Mode**
 2. 🖱️ Right-click your game → **Properties**
