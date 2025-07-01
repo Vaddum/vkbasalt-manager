@@ -34,7 +34,7 @@ show_header() {
 show_main_menu() {
     echo -e "${BLUE}Main Menu:${NC}"
     echo ""
-    echo -e "  ${GREEN}1)${NC} Install VkBasalt & Shaders"
+    echo -e "  ${GREEN}1)${NC} Install VkBasalt and 4 shaders"
     echo -e "  ${GREEN}2)${NC} Configure VkBasalt"
     echo -e "  ${GREEN}3)${NC} Usage Information"
     echo -e "  ${GREEN}4)${NC} Check Installation Status"
@@ -66,7 +66,7 @@ check_status() {
     # Check shaders
     if [ -d "$SHADER_PATH" ] && [ "$(ls -A $SHADER_PATH 2>/dev/null)" ]; then
         shader_count=$(ls -1 $SHADER_PATH/*.fx 2>/dev/null | wc -l)
-        echo -e "  ${GREEN}✓${NC} Shaders: ${GREEN}$shader_count shaders installed${NC}"
+        echo -e "  ${GREEN}✓${NC} Shaders: ${GREEN}$shader_count Shaders installed${NC}"
     else
         echo -e "  ${RED}✗${NC} Shaders: ${RED}Not installed${NC}"
     fi
@@ -332,7 +332,7 @@ EOF
 manage_shaders() {
     clear
     show_header
-    echo -e "${BLUE}Shader Management:${NC}"
+    echo -e "${BLUE}Shaders Management:${NC}"
     echo ""
     
     # Show current effects
@@ -854,7 +854,7 @@ show_usage() {
     show_header
     echo -e "${BLUE}How to Use VkBasalt:${NC}"
     echo ""
-    echo -e "${CYAN}═══ Game Configuration ═══${NC}"
+    echo -e "${CYAN}═══ Game Configuration (if needed) ═══${NC}"
     echo -e "${YELLOW}1.${NC} Open Steam in Desktop Mode"
     echo -e "${YELLOW}2.${NC} Right-click your game → Properties"
     echo -e "${YELLOW}3.${NC} In launch options, add:"
@@ -873,10 +873,10 @@ show_usage() {
 
 # Uninstall function
 uninstall_all() {
-    echo -e "${RED}🗑️  Uninstall VkBasalt and Shaders${NC}"
+    echo -e "${RED}🗑️  Uninstall VkBasalt and shaders${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  This will remove all VkBasalt components and shaders${NC}"
-    echo -e -n "${RED}Are you sure you want to continue? [y/N]: ${NC}"
+    echo -e -n "${RED}Are you sure you want to continue? [Y/N]: ${NC}"
     read confirm
     
     if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
