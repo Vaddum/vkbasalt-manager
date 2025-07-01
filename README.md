@@ -13,7 +13,7 @@ A comprehensive installation and configuration tool for VkBasalt on Steam Deck, 
 
 ## ✨ Features
 
-- 🚀 **Complete Installation**: Automated VkBasalt and shader installation
+- 🚀 **Complete Installation**: Automated VkBasalt and shaders installation
 - 🎨 **Preset Configurations**: Ready-to-use visual enhancement presets
 - ⚙️ **Advanced Configuration**: Fine-tune individual shader parameters
 - 💾 **Backup Management**: Create, restore, and manage configuration backups
