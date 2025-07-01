@@ -9,7 +9,7 @@
 
 </div>
 
-A comprehensive installation and configuration tool for VkBasalt on Steam Deck, providing an intuitive interface to enhance your gaming visuals with post-processing effects.
+A comprehensive installation and configuration tool for VkBasalt on Steam Deck, providing an intuitive interface to enhance your gaming visuals with post-processing effects including 4 ReShade sahders.
 
 ## ✨ Features
 
@@ -48,13 +48,13 @@ VkBasalt is a Vulkan post-processing layer that allows you to apply various visu
    ./vkbasalt_manager.sh
    ```
 
-3. **Select** option `1` to install VkBasalt & Shaders
+3. **Select** option `1` to install VkBasalt and the 4 included shaders
 
 ### 📋 What Gets Installed
 
 - ⚙️ **VkBasalt libraries** (64-bit and 32-bit)
 - 🔧 **Vulkan layer configuration**
-- 🎨 **ReShade shaders collection**
+- 🎨 **Collection of 4 ReShade shaders**
 - 📄 **Default configuration file**
 
 ## 🎮 Usage
@@ -79,13 +79,13 @@ VkBasalt is a Vulkan post-processing layer that allows you to apply various visu
 
 | Option | Description | Icon |
 |--------|-------------|------|
-| **Install VkBasalt & Shaders** | Complete automated installation | 📦 |
+| **Install VkBasalt and 4 ReShade shaders** | Complete automated installation | 📦 |
 | **Configure VkBasalt** | Access configuration options | ⚙️ |
 | **Usage Information** | Help and file locations | ℹ️ |
 | **Check Installation Status** | Verify installation | ✅ |
 | **Uninstall Everything** | Complete removal | 🗑️ |
 
-### 🎨 Preset Configurations
+### 🎨 Preset Configurations (using the 4 included ReShade shaders)
 
 #### 1. 🏁 Performance (Light Effects)
 - **Effects**: CAS + FXAA + SMAA
@@ -214,7 +214,7 @@ This will remove:
 
 This tool automates the installation and configuration of:
 - 🛠️ [VkBasalt](https://github.com/DadSchoorse/vkBasalt) by DadSchoorse
-- 🎨 Shader collection from various ReShade contributors
+- 🎨 4 shaders from various ReShade contributors
 
 ## 📜 License
 
