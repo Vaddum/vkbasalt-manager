@@ -9,7 +9,7 @@
 
 </div>
 
-A comprehensive installation and configuration tool for VkBasalt on Steam Deck, providing an intuitive interface to enhance your gaming visuals with post-processing effects including 4 ReShade sahders.
+A comprehensive installation and configuration tool for VkBasalt on Steam Deck, providing an intuitive interface to enhance your gaming visuals with post-processing effects including 4 ReShade shaders.
 
 ## ✨ Features
 
