@@ -43,7 +43,7 @@ show_header() {
 show_main_menu() {
     echo -e "${BLUE}Main Menu:${NC}"
     echo ""
-    echo -e "  ${GREEN}1)${NC} Install VkBasalt & Shaders"
+    echo -e "  ${GREEN}1)${NC} Install VkBasalt (with 4 shaders)"
     echo -e "  ${GREEN}2)${NC} Configure VkBasalt"
     echo -e "  ${GREEN}3)${NC} Usage Information"
     echo -e "  ${GREEN}4)${NC} Check Installation Status"
@@ -768,7 +768,7 @@ show_usage() {
 }
 
 uninstall_all() {
-    echo -e "${RED}🗑️  Uninstall VkBasalt and Shaders${NC}"
+    echo -e "${RED}🗑️  Uninstall VkBasalt and shaders${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  This will remove all VkBasalt components and shaders${NC}"
     echo -e -n "${RED}Are you sure you want to continue? [y/N]: ${NC}"
