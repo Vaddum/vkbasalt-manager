@@ -38,7 +38,7 @@ VkBasalt est une couche Vulkan qui permet d'appliquer des effets visuels post-tr
 
 ```bash
 # Télécharger et exécuter l'installateur
-wget -O vkbasalt_installer.sh https://votre-url/vkbasalt_installer.sh
+wget -O vkbasalt_installer.sh https://github.com/Vaddum/vkbasalt-manager/blob/main/vkbasalt_installer.sh
 chmod +x vkbasalt_installer.sh
 ./vkbasalt_installer.sh
 ```
