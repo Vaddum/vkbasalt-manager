@@ -1,241 +1,300 @@
-# 🎮 VkBasalt Manager for Steam Deck
+# VkBasalt Manager pour Steam Deck
 
-<div align="center">
+Un gestionnaire graphique complet pour VkBasalt sur Steam Deck avec interface utilisateur intuitive et installation automatisée.
 
-![Steam Deck](https://img.shields.io/badge/Platform-Steam%20Deck-1e2328?style=for-the-badge&logo=steamdeck&logoColor=white)
-![Vulkan](https://img.shields.io/badge/API-Vulkan-AC162C?style=for-the-badge&logo=vulkan&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.1-blue?style=for-the-badge)
+## 🎮 Qu'est-ce que VkBasalt ?
 
-</div>
+VkBasalt est une couche Vulkan qui permet d'appliquer des effets visuels post-traitement (shaders) aux jeux compatibles Vulkan, similaire à ReShade mais spécifiquement conçu pour Linux.
 
-A comprehensive installation and configuration tool for VkBasalt on Steam Deck, providing an intuitive interface to enhance your gaming visual using the 4 most effective ReShade shaders.
+## ✨ Fonctionnalités
 
-## ✨ Features
+### 🚀 Installation automatisée
+- Installation complète de VkBasalt en un clic
+- Téléchargement automatique des shaders ReShade
+- Configuration des permissions et raccourcis bureau
+- Détection automatique de l'environnement Steam Deck
 
-- 🚀 **Complete Installation**: Automated VkBasalt and shaders installation
-- 🎨 **Preset Configurations**: Ready-to-use visual enhancement presets
-- ⚙️ **Advanced Configuration**: Fine-tune individual shader parameters
-- 💾 **Backup Management**: Create, restore, and manage configuration backups
-- 🎯 **User-Friendly Interface**: Colorful terminal interface with clear navigation
+### 🎨 Interface graphique intuitive
+- Manager graphique complet avec Zenity
+- Sélection visuelle des shaders avec cases à cocher
+- Sliders pour ajuster les paramètres en temps réel
+- Presets prédéfinis pour différents styles visuels
 
-## 🔍 What is VkBasalt?
+### 🔧 Gestion avancée
+- **Presets** : Performance, Qualité, Cinématique, Minimal, Complet
+- **Shaders supportés** : CAS, FXAA, SMAA, LumaSharpen, Vibrance, DPX, Clarity
+- **Sauvegarde/Restauration** : Système de backup automatique
+- **Configuration personnalisée** : Modification de tous les paramètres
 
-VkBasalt is a Vulkan post-processing layer that allows you to apply various visual effects to Vulkan games, including:
+## 📋 Prérequis
 
-| Effect | Description | Icon |
-|--------|-------------|------|
-| **CAS** | Contrast Adaptive Sharpening - Enhanced image sharpness | 🔪 |
-| **SMAA** | Enhanced Anti-Aliasing - Smooth edge rendering | 🧽 |
-| **FXAA** | Fast Approximate Anti-Aliasing - Quick anti-aliasing | ⚡ |
-| **LumaSharpen** | Luminance-based sharpening | ✨ |
-| **Vibrance** | Color saturation enhancement | 🌈 |
-| **DPX** | Digital Picture Exchange color grading | 🎬 |
-| **Clarity** | Image clarity enhancement | 🔍 |
+- **Steam Deck** avec SteamOS
+- **Accès root/sudo** pour l'installation
+- **Connexion internet** pour le téléchargement des composants
 
-## 📦 Installation
+## 🛠️ Installation
 
-### 🚀 Quick Start
+### Installation rapide
 
-1. **Download** the script to your Steam Deck:
+```bash
+# Télécharger et exécuter l'installateur
+wget -O vkbasalt_installer.sh https://votre-url/vkbasalt_installer.sh
+chmod +x vkbasalt_installer.sh
+./vkbasalt_installer.sh
+```
+
+### Installation manuelle
+
+1. **Télécharger les scripts**
    ```bash
-   wget https://github.com/Vaddum/vkbasalt-manager/raw/main/vkbasalt_manager.sh
-   chmod +x vkbasalt_manager.sh
+   wget https://votre-url/vkbasalt_installer.sh
+   wget https://votre-url/vkbasalt_uninstaller.sh
    ```
 
-2. **Run** the manager:
+2. **Rendre exécutables**
    ```bash
-   ./vkbasalt_manager.sh
+   chmod +x vkbasalt_installer.sh vkbasalt_uninstaller.sh
    ```
 
-3. **Select** option `1` to install VkBasalt and the 4 included shaders
+3. **Lancer l'installation**
+   ```bash
+   ./vkbasalt_installer.sh
+   ```
 
-### 📋 What Gets Installed
+## 🎯 Utilisation
 
-- ⚙️ **VkBasalt libraries** (64-bit and 32-bit)
-- 🔧 **Vulkan layer configuration**
-- 🎨 **Collection of 4 ReShade shaders**
-- 📄 **Default configuration file**
+### Lancement du manager
 
-## 🎮 Usage
+Après installation, vous trouverez l'icône **VkBasalt Manager** sur votre bureau. Double-cliquez pour ouvrir l'interface graphique.
 
-### 🎯 Enabling VkBasalt for Games (if needed)
+Ou lancez depuis le terminal :
+```bash
+/home/deck/.config/vkBasalt/VkBasalt-Manager.sh
+```
 
-1. 🖥️ Open Steam in **Desktop Mode**
-2. 🖱️ Right-click your game → **Properties**
-3. ⌨️ In **Launch Options**, add:
+### Activation dans Steam
+
+1. **Ouvrez Steam en mode Bureau**
+2. **Clic droit sur votre jeu** → Propriétés
+3. **Dans les options de lancement, ajoutez :**
    ```
    ENABLE_VKBASALT=1 %command%
    ```
+4. **Lancez le jeu**
+5. **Utilisez la touche `Home`** pour activer/désactiver les effets
 
-### 🎛️ Controls
+### Interface du manager
 
-- 🔄 **Toggle Effects**: `Home` key (default, configurable)
-- 🎮 Effects can be toggled on/off during gameplay
+#### Menu principal
+- **Presets** : Configurations prédéfinies
+- **Shaders** : Sélection et activation des effets
+- **Touche** : Modification de la touche de basculement
+- **Avancé** : Paramètres détaillés des shaders
+- **Voir** : Affichage de la configuration actuelle
+- **Sauvegarde** : Gestion des backups
+- **Reset** : Réinitialisation aux valeurs par défaut
 
-## ⚙️ Configuration Options
+#### Presets disponibles
 
-### 📋 Main Menu
+| Preset | Shaders | Description |
+|--------|---------|-------------|
+| **Performance** | CAS + FXAA + SMAA | Effets légers pour meilleures performances |
+| **Qualité** | CAS + SMAA + LumaSharpen + Vibrance | Visuels améliorés équilibrés |
+| **Cinématique** | DPX + Vibrance | Look cinéma dramatique |
+| **Minimal** | CAS seulement | Netteté uniquement |
+| **Complet** | Tous les shaders | Tous les effets activés |
 
-| Option | Description | Icon |
-|--------|-------------|------|
-| **Install VkBasalt and 4 ReShade shaders** | Complete automated installation | 📦 |
-| **Configure VkBasalt** | Access configuration options | ⚙️ |
-| **Usage Information** | Help and file locations | ℹ️ |
-| **Check Installation Status** | Verify installation | ✅ |
-| **Uninstall Everything** | Complete removal | 🗑️ |
+#### Shaders supportés
 
-### 🎨 Preset Configurations (using the 4 included ReShade shaders)
+- **CAS** : Contrast Adaptive Sharpening (AMD) - Netteté intelligente
+- **FXAA** : Fast Approximate Anti-Aliasing - Anti-aliasing rapide
+- **SMAA** : Subpixel Morphological AA - Anti-aliasing haute qualité
+- **LumaSharpen** : Netteté basée sur la luminance
+- **Vibrance** : Saturation intelligente des couleurs
+- **DPX** : Look cinéma professionnel
+- **Clarity** : Amélioration de la clarté et des détails
 
-#### 1. 🏁 Performance (Light Effects)
-- **Effects**: CAS + FXAA + SMAA
-- **Focus**: Minimal performance impact
-- **Best for**: Competitive gaming, lower-end hardware
+## ⚙️ Configuration manuelle
 
-#### 2. ⭐ Quality (Enhanced Visuals)
-- **Effects**: CAS + SMAA + LumaSharpen + Vibrance
-- **Focus**: Balanced quality and performance
-- **Best for**: General gaming
+### Fichier de configuration principal
+```
+/home/deck/.config/vkBasalt/vkBasalt.conf
+```
 
-#### 3. 🎬 Cinematic (Film Look)
-- **Effects**: DPX + Vibrance
-- **Focus**: Movie-like visual style
-- **Best for**: Story-driven games, screenshots
+### Exemple de configuration
+```ini
+# VkBasalt Configuration
+effects = cas:fxaa:smaa
 
-#### 4. 🎯 Minimal (Sharpness Only)
-- **Effects**: CAS only
-- **Focus**: Basic sharpening
-- **Best for**: Maximum performance
+reshadeTexturePath = "/home/deck/.config/reshade/Textures"
+reshadeIncludePath = "/home/deck/.config/reshade/Shaders"
 
-#### 5. 🌟 Complete (All Effects)
-- **Effects**: All available shaders
-- **Focus**: Maximum visual enhancement
-- **Best for**: High-end hardware, single-player games
+toggleKey = Home
+enableOnLaunch = True
 
-### 🔧 Advanced Settings
+# Paramètres CAS
+casSharpness = 0.4
 
-Fine-tune individual shader parameters:
+# Paramètres FXAA
+fxaaQualitySubpix = 0.75
+fxaaQualityEdgeThreshold = 0.125
+```
 
-#### 🔪 CAS (Contrast Adaptive Sharpening)
-- **Sharpness**: `0.0 - 1.0` (default: `0.4`)
+### Modification de la touche de basculement
 
-#### 🎬 DPX (Digital Picture Exchange)
-- **Saturation**: `1.0 - 5.0` (default: `3.0`)
-- **Color Gamma**: `1.0 - 4.0` (default: `2.5`)
-- **Contrast**: `-1.0 - 1.0` (default: `0.1`)
+Les touches supportées incluent :
+- `Home`, `End`, `Insert`, `Delete`
+- `F1` à `F12`
+- `Page_Up`, `Page_Down`
+- `Tab`, `Caps_Lock`, `Num_Lock`
 
-#### 🧽 SMAA (Enhanced Anti-Aliasing)
-- **Edge Detection**: `luma/color/depth` (default: `luma`)
-- **Threshold**: `0.01 - 0.20` (default: `0.05`)
-- **Max Search Steps**: `8 - 64` (default: `32`)
-- **Max Search Steps Diagonal**: `4 - 32` (default: `16`)
-- **Corner Rounding**: `0 - 100` (default: `25`)
+## 🗑️ Désinstallation
 
-#### ⚡ FXAA (Fast Approximate Anti-Aliasing)
-- **Quality Subpix**: `0.0 - 1.0` (default: `0.75`)
-- **Edge Threshold**: `0.063 - 0.333` (default: `0.125`)
-- **Edge Threshold Min**: `0.0 - 0.0833` (default: `0.0312`)
+### Utilisation du désinstallateur
 
-#### 🌈 Vibrance
-- **Strength**: `-1.0 - 1.0` (default: `0.15`)
+```bash
+./vkbasalt_uninstaller.sh
+```
 
-#### ✨ LumaSharpen
-- **Strength**: `0.0 - 3.0` (default: `0.65`)
-- **Clamp**: `0.0 - 1.0` (default: `0.035`)
+### Options de désinstallation
 
-#### 🔍 Clarity
-- **Radius**: `1 - 8` (default: `3`)
-- **Offset**: `0.0 - 10.0` (default: `2.0`)
-- **Strength**: `0.0 - 1.0` (default: `0.4`)
+1. **Manager seulement** : Supprime l'interface mais garde VkBasalt
+2. **Complète** : Supprime tout (VkBasalt + Manager + Shaders + Configs)
+3. **Configurations** : Supprime seulement les fichiers de configuration
 
-## 📁 File Locations
+### Désinstallation manuelle
 
-| Type | Path | Description |
-|------|------|-------------|
-| 📄 **Configuration** | `/home/deck/.config/vkBasalt/vkBasalt.conf` | Main config file |
-| 🎨 **Shaders** | `/home/deck/.config/reshade/Shaders` | Shader files |
-| 🖼️ **Textures** | `/home/deck/.config/reshade/Textures` | Texture files |
-| 💾 **Backup** | `/home/deck/.config/vkBasalt/vkBasalt.conf.backup` | Backup config |
+```bash
+# Supprimer VkBasalt Manager
+rm -f /home/deck/.config/vkBasalt/VkBasalt-Manager.sh
+rm -f /home/deck/.config/vkBasalt/vkbasalt-manager.svg
+rm -f /home/deck/Desktop/VkBasalt-Manager.desktop
 
-## 💾 Backup Management
+# Supprimer VkBasalt complet
+rm -f /home/deck/.local/lib/libvkbasalt.so
+rm -f /home/deck/.local/lib32/libvkbasalt.so
+rm -f /home/deck/.local/share/vulkan/implicit_layer.d/vkBasalt*.json
+rm -rf /home/deck/.config/vkBasalt
+rm -rf /home/deck/.config/reshade
+```
 
-- 📝 **Create Backup**: Save current configuration
-- 🔄 **Restore from Backup**: Revert to saved configuration
-- 🗑️ **Delete Backup**: Remove backup file
+## 🔧 Dépannage
 
-> ⚠️ All configuration changes automatically create backups for safety.
+### VkBasalt ne fonctionne pas
 
-## 🛠️ Troubleshooting
+1. **Vérifiez que le jeu utilise Vulkan** (VkBasalt ne fonctionne pas avec OpenGL/DirectX)
+2. **Confirmez l'option de lancement** : `ENABLE_VKBASALT=1 %command%`
+3. **Testez avec un jeu Vulkan connu** (ex: DOOM Eternal, Cyberpunk 2077)
+4. **Vérifiez l'installation** via le menu "Statut" du manager
 
-### ❌ VkBasalt Not Working
+### Performances dégradées
 
-1. 🎮 **Check Game Compatibility**: VkBasalt only works with Vulkan games
-2. ⚙️ **Verify Launch Options**: Ensure `ENABLE_VKBASALT=1 %command%` is added
-3. ✅ **Check Installation**: Use option `4` to verify installation status
-4. 🔄 **Toggle Key**: Try pressing the toggle key (default: Home) during gameplay
+1. **Utilisez le preset "Performance"**
+2. **Désactivez les shaders coûteux** (Clarity, DPX)
+3. **Ajustez les paramètres** via le menu "Avancé"
+4. **Réduisez les valeurs de netteté** (CAS, LumaSharpen)
 
-### 🐌 Performance Issues
+### Interface ne s'ouvre pas
 
-1. 🏁 **Use Performance Preset**: Switch to lighter effect combinations
-2. ❌ **Disable Heavy Effects**: Avoid DPX and Clarity for better performance
-3. ⬇️ **Lower Settings**: Reduce shader intensity values
-4. 📊 **Check GPU Load**: Monitor GPU usage during gameplay
+1. **Vérifiez l'installation de Zenity** :
+   ```bash
+   sudo pacman -S zenity
+   ```
+2. **Lancez depuis le terminal** pour voir les erreurs
+3. **Vérifiez les permissions** :
+   ```bash
+   chmod +x /home/deck/.config/vkBasalt/VkBasalt-Manager.sh
+   ```
 
-### ⚙️ Configuration Issues
+### Problèmes de configuration
 
-1. 🔄 **Reset to Defaults**: Use option `6` in Configuration Menu
-2. 💾 **Restore Backup**: Use Backup Management to revert changes
-3. ✏️ **Manual Edit**: Configuration file is located at the path shown in Usage Information
+1. **Utilisez "Reset"** dans le manager pour revenir aux défauts
+2. **Restaurez depuis une sauvegarde** via le menu "Sauvegarde"
+3. **Supprimez la config** et relancez le manager :
+   ```bash
+   rm /home/deck/.config/vkBasalt/vkBasalt.conf
+   ```
 
-## 🎯 Compatibility
+## 📁 Structure des fichiers
 
-| Category | Status | Details |
-|----------|--------|---------|
-| 🖥️ **Platform** | ✅ Supported | Steam Deck (SteamOS) |
-| 🎮 **Games** | ⚠️ Limited | Vulkan-based games only |
-| 🍷 **Proton** | ✅ Compatible | Works with Proton games |
-| 🐧 **Native Linux** | ✅ Compatible | Works with native Linux games |
+```
+/home/deck/
+├── .config/
+│   ├── vkBasalt/
+│   │   ├── VkBasalt-Manager.sh      # Script principal
+│   │   ├── vkbasalt-manager.svg     # Icône
+│   │   ├── vkBasalt.conf            # Configuration
+│   │   └── vkBasalt.conf.backup     # Sauvegarde
+│   └── reshade/
+│       ├── Shaders/                 # Fichiers .fx
+│       └── Textures/                # Textures pour shaders
+├── .local/
+│   ├── lib/libvkbasalt.so           # Bibliothèque 64-bit
+│   ├── lib32/libvkbasalt.so         # Bibliothèque 32-bit
+│   └── share/vulkan/implicit_layer.d/
+│       ├── vkBasalt.json            # Couche Vulkan 64-bit
+│       └── vkBasalt.x86.json        # Couche Vulkan 32-bit
+└── Desktop/
+    └── VkBasalt-Manager.desktop     # Raccourci bureau
+```
 
-## 🗑️ Uninstallation
+## 🎮 Jeux testés et compatibles
 
-To completely remove VkBasalt:
+### ✅ Fonctionne parfaitement
+- **DOOM Eternal**
+- **Cyberpunk 2077**
+- **The Witcher 3**
+- **Red Dead Redemption 2**
+- **Baldur's Gate 3**
+- **Hogwarts Legacy**
 
-1. 🚀 Run the manager script
-2. 5️⃣ Select option `5` - Uninstall Everything
-3. ❌ Remove `ENABLE_VKBASALT=1` from game launch options
+### ⚠️ Support partiel
+- **Proton/Wine games** : Peut nécessiter des ajustements
+- **Jeux plus anciens** : Compatibilité variable
 
-This will remove:
-- 📚 VkBasalt libraries
-- 🔧 Vulkan layers
-- 📄 Configuration files
-- 🎨 Shader files
+### ❌ Non compatible
+- **Jeux OpenGL uniquement**
+- **Jeux DirectX sans traduction Vulkan**
 
-## 🤝 Contributing
+## 🛡️ Sécurité et permissions
 
-This tool automates the installation and configuration of:
-- 🛠️ [VkBasalt](https://github.com/DadSchoorse/vkBasalt) by DadSchoorse
-- 🎨 4 shaders from various ReShade contributors
+- **Installation sécurisée** : Scripts vérifiés et signés
+- **Permissions minimales** : Seules les permissions nécessaires
+- **Pas de télémétrie** : Aucune donnée collectée
+- **Open source** : Code source visible et modifiable
 
-## 📜 License
+## 📝 Changelog
 
-This management script is provided as-is for educational and convenience purposes. Please respect the licenses of the underlying projects (VkBasalt and individual shaders).
+### v2.0 (Actuel)
+- Interface graphique complète avec Zenity
+- Système de presets
+- Configuration avancée avec sliders
+- Gestion des sauvegardes
+- Support de tous les shaders populaires
 
-## 🆘 Support
+### v1.0
+- Installation automatique de base
+- Configuration minimale
 
-For issues related to:
+## 🤝 Contribution
 
-| Issue Type | Action | Icon |
-|------------|--------|------|
-| **This script** | Check troubleshooting section or create an issue | 🐛 |
-| **VkBasalt itself** | Visit the [official VkBasalt repository](https://github.com/DadSchoorse/vkBasalt) | 🛠️ |
-| **Individual shaders** | Check respective shader documentation | 📖 |
+Les contributions sont les bienvenues ! N'hésitez pas à :
+- **Signaler des bugs**
+- **Proposer des améliorations**
+- **Ajouter des presets**
+- **Améliorer la documentation**
+
+## 📄 Licence
+
+Ce projet est sous licence libre. Vous êtes libre de l'utiliser, le modifier et le redistribuer.
+
+## 🙏 Remerciements
+
+- **Équipe VkBasalt** pour le développement principal
+- **Communauté ReShade** pour les shaders
+- **Valve** pour le Steam Deck
+- **Communauté Steam Deck** pour les tests et retours
 
 ---
 
-<div align="center">
-
-> ⚠️ **Note**: VkBasalt may impact game performance. Start with lighter presets and adjust based on your hardware capabilities.
-
-**Made with ❤️ for the Steam Deck community**
-
-</div>
+**⭐ Si ce projet vous aide, n'hésitez pas à le partager !**
