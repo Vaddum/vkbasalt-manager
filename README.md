@@ -49,17 +49,6 @@
 
 ## 📥 Installation
 
-### Method 1: Quick Install (Recommended)
-
-```bash
-# Download and run the installer
-curl -L https://github.com/[your-repo]/vkbasalt-manager/raw/main/vkbasalt-manager.sh -o vkbasalt-manager.sh
-chmod +x vkbasalt-manager.sh
-./vkbasalt-manager.sh
-```
-
-### Method 2: Manual Download
-
 1. Download `vkbasalt-manager.sh` from the releases page
 2. Make it executable: `chmod +x vkbasalt-manager.sh`
 3. Run it: `./vkbasalt-manager.sh`
