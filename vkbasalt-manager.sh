@@ -8,7 +8,7 @@ CONFIG_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf"
 BACKUP_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf.backup"
 SHADER_PATH="/home/deck/.config/reshade/Shaders"
 TEXTURE_PATH="/home/deck/.config/reshade/Textures"
-SCRIPT_PATH="/home/deck/.config/vkBasalt/VkBasalt-Manager.sh"
+SCRIPT_PATH="/home/deck/.config/vkBasalt/vkbasalt-manager.sh"
 ICON_PATH="/home/deck/.config/vkBasalt/vkbasalt-manager.svg"
 DESKTOP_FILE="/home/deck/Desktop/VkBasalt-Manager.desktop"
 
@@ -64,6 +64,30 @@ check_installation() {
     fi
 }
 
+# Function to move script to final location
+move_script_to_final_location() {
+    # Get the current script path
+    local current_script="$(realpath "$0")"
+    local current_dir="$(dirname "$current_script")"
+
+    # If script is not already in the target location
+    if [ "$current_script" != "$SCRIPT_PATH" ]; then
+        # Copy the script to the final location
+        cp "$current_script" "$SCRIPT_PATH"
+        chmod +x "$SCRIPT_PATH"
+        chown deck:deck "$SCRIPT_PATH" 2>/dev/null || true
+
+        # Update desktop file to point to new location
+        if [ -f "$DESKTOP_FILE" ]; then
+            sed -i "s|Exec=.*|Exec=$SCRIPT_PATH|" "$DESKTOP_FILE"
+        fi
+
+        return 0  # Script was moved
+    fi
+
+    return 1  # Script was already in place
+}
+
 # ===============================
 # INSTALLATION
 # ===============================
@@ -113,6 +137,9 @@ install_vkbasalt() {
         echo "80" ; echo "# Creating configuration..."
         create_default_config
 
+        echo "85" ; echo "# Moving script to final location..."
+        move_script_to_final_location
+
         echo "90" ; echo "# Creating icon and shortcut..."
         create_icon_and_desktop
 
@@ -135,7 +162,12 @@ install_vkbasalt() {
         --width=500
 
     if [ $? -eq 0 ]; then
-        show_info "✅ Installation successful!\n\nVkBasalt Manager is now installed and ready to use.\n\n🎮 To enable VkBasalt in a Steam game:\n1. Right-click on the game → Properties\n2. Launch options: ENABLE_VKBASALT=1 %command%\n3. Launch the game and use the Home key to toggle"
+        # Check if script was moved and inform user
+        if move_script_to_final_location; then
+            show_info "✅ Installation successful!\n\nVkBasalt Manager is now installed and ready to use.\n\n📁 The script has been moved to: $SCRIPT_PATH\n\n🎮 To enable VkBasalt in a Steam game:\n1. Right-click on the game → Properties\n2. Launch options: ENABLE_VKBASALT=1 %command%\n3. Launch the game and use the Home key to toggle\n\n💡 You can now delete the original script file if it was in a different location."
+        else
+            show_info "✅ Installation successful!\n\nVkBasalt Manager is now installed and ready to use.\n\n🎮 To enable VkBasalt in a Steam game:\n1. Right-click on the game → Properties\n2. Launch options: ENABLE_VKBASALT=1 %command%\n3. Launch the game and use the Home key to toggle"
+        fi
     else
         show_error "❌ Installation error.\nPlease try again or check your internet connection."
     fi
