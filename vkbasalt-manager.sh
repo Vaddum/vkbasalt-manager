@@ -5,7 +5,6 @@
 # Automatically manages installation, configuration and uninstallation
 
 CONFIG_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf"
-BACKUP_FILE="/home/deck/.config/vkBasalt/vkBasalt.conf.backup"
 SHADER_PATH="/home/deck/.config/reshade/Shaders"
 TEXTURE_PATH="/home/deck/.config/reshade/Textures"
 SCRIPT_PATH="/home/deck/.config/vkBasalt/vkbasalt-manager.sh"
@@ -27,11 +26,11 @@ check_zenity() {
     fi
 }
 
-# Dialogs
-show_error() { zenity --error --text="$1" --width=400; }
-show_info() { zenity --info --text="$1" --width=400; }
-show_warning() { zenity --warning --text="$1" --width=400; }
-show_question() { zenity --question --text="$1" --width=450; }
+# Dialogs - OPTIMIZED SIZES
+show_error() { zenity --error --text="$1" --width=480 --height=140; }
+show_info() { zenity --info --text="$1" --width=480 --height=140; }
+show_warning() { zenity --warning --text="$1" --width=480 --height=140; }
+show_question() { zenity --question --text="$1" --width=480 --height=140; }
 
 # Installation check
 check_installation() {
@@ -159,7 +158,8 @@ install_vkbasalt() {
         --text="Preparing..." \
         --percentage=0 \
         --auto-close \
-        --width=500
+        --width=420 \
+        --height=110
 
     if [ $? -eq 0 ]; then
         # Check if script was moved and inform user
@@ -256,50 +256,8 @@ EOF
 # UNINSTALLATION
 # ===============================
 
-show_uninstall_menu() {
-    local choice=$(zenity --list \
-        --title="VkBasalt Manager Uninstaller" \
-        --text="What do you want to uninstall?\n\n⚠️ Choose the appropriate option:" \
-        --column="Option" \
-        --column="Description" \
-        --width=600 \
-        --height=400 \
-        "Manager" "Uninstall only VkBasalt Manager (keep VkBasalt)" \
-        "Complete" "Uninstall VkBasalt Manager + VkBasalt + Shaders" \
-        "Config" "Remove only configurations/backups" \
-        "Cancel" "Return to main menu" \
-        2>/dev/null)
-
-    case "$choice" in
-        "Manager") uninstall_manager_only ;;
-        "Complete") uninstall_complete ;;
-        "Config") uninstall_config_only ;;
-        *) return ;;
-    esac
-}
-
-uninstall_manager_only() {
-    if show_question "🗑️ Uninstall VkBasalt Manager only?\n\nThis will remove:\n• VkBasalt Manager script\n• Icon and desktop shortcut\n• BUT will keep VkBasalt and its configurations\n\nContinue?"; then
-        (
-            echo "20" ; echo "# Removing script..."
-            [ -f "$SCRIPT_PATH" ] && rm -f "$SCRIPT_PATH"
-
-            echo "50" ; echo "# Removing icon..."
-            [ -f "$ICON_PATH" ] && rm -f "$ICON_PATH"
-
-            echo "80" ; echo "# Removing shortcut..."
-            [ -f "$DESKTOP_FILE" ] && rm -f "$DESKTOP_FILE"
-
-            echo "100" ; echo "# Cleanup complete"
-        ) | zenity --progress --title="Manager Uninstallation" --text="Removing in progress..." --percentage=0 --auto-close --width=400
-
-        show_info "✅ VkBasalt Manager uninstalled successfully!\n\n📋 Result:\n• Manager removed\n• VkBasalt kept\n• Configurations kept\n• Shaders kept"
-        exit 0
-    fi
-}
-
-uninstall_complete() {
-    if show_question "🗑️ Complete uninstallation?\n\n⚠️ WARNING: This will remove EVERYTHING:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n• All backups\n\nThis action is IRREVERSIBLE!\n\nContinue?"; then
+uninstall_vkbasalt() {
+    if show_question "🗑️ Uninstallation?\n\n⚠️ WARNING: This will remove EVERYTHING:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n• All backups\n\nThis action is IRREVERSIBLE!\n\nContinue?"; then
         (
             echo "10" ; echo "# Removing VkBasalt Manager..."
             [ -f "$SCRIPT_PATH" ] && rm -f "$SCRIPT_PATH"
@@ -323,55 +281,50 @@ uninstall_complete() {
             rmdir /home/deck/.local/share/vulkan 2>/dev/null || true
             rmdir /home/deck/.local/lib32 2>/dev/null || true
 
-            echo "100" ; echo "# Uninstallation complete"
-        ) | zenity --progress --title="Complete Uninstallation" --text="Removing all components..." --percentage=0 --auto-close --width=450
+            echo "100" ; echo "# Uninstallation"
+        ) | zenity --progress --title="Uninstallation" --text="Removing all components..." --percentage=0 --auto-close --width=420 --height=110
 
-        show_info "✅ Complete uninstallation finished!\n\n📋 Result:\n• VkBasalt Manager removed\n• VkBasalt removed\n• Configurations removed\n• Shaders removed\n• System cleaned\n\n💡 Don't forget to remove ENABLE_VKBASALT=1 from your Steam games launch options."
+        show_info "✅ Uninstallation finished!\n\n📋 Result:\n• VkBasalt Manager removed\n• VkBasalt removed\n• Configurations removed\n• Shaders removed\n• System cleaned\n\n💡 Don't forget to remove ENABLE_VKBASALT=1 from your Steam games launch options."
         exit 0
     fi
 }
 
-uninstall_config_only() {
-    if show_question "🗑️ Remove configurations?\n\nThis will remove:\n• vkBasalt.conf\n• vkBasalt.conf.backup\n• BUT will keep VkBasalt Manager and VkBasalt\n\nContinue?"; then
-        (
-            echo "30" ; echo "# Removing configurations..."
-            [ -f "$CONFIG_FILE" ] && rm -f "$CONFIG_FILE"
-
-            echo "70" ; echo "# Removing backups..."
-            [ -f "$BACKUP_FILE" ] && rm -f "$BACKUP_FILE"
-
-            echo "100" ; echo "# Cleanup complete"
-        ) | zenity --progress --title="Configuration Removal" --text="Cleaning configurations..." --percentage=0 --auto-close --width=400
-
-        show_info "✅ Configurations removed!\n\n📋 Result:\n• Configurations removed\n• VkBasalt Manager kept\n• VkBasalt kept\n• Shaders kept"
-    fi
-}
-
 # ===============================
-# CONFIGURATION (EXISTING CODE)
+# CONFIGURATION
 # ===============================
 
-# Backup
-create_backup() { [ -f "$CONFIG_FILE" ] && cp "$CONFIG_FILE" "$BACKUP_FILE"; }
-restore_backup() {
-    if [ -f "$BACKUP_FILE" ]; then
-        if show_question "Restore configuration from backup?\nThis will overwrite the current configuration."; then
-            cp "$BACKUP_FILE" "$CONFIG_FILE"
-            show_info "✓ Configuration restored from backup"
-        fi
-    else
-        show_error "❌ No backup found"
-    fi
-}
-delete_backup() {
-    if [ -f "$BACKUP_FILE" ]; then
-        if show_question "Delete backup?\nThis action is irreversible."; then
-            rm "$BACKUP_FILE"
-            show_info "✓ Backup deleted"
-        fi
-    else
-        show_error "❌ No backup found"
-    fi
+# Function to get shader description
+get_shader_description() {
+    local shader_name="$1"
+    case "$shader_name" in
+        "cas"|"CAS") echo "🟢 AMD Adaptive Sharpening - Enhances details without artifacts (Built-in VkBasalt)" ;;
+        "fxaa"|"FXAA") echo "🟢 Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in VkBasalt)" ;;
+        "smaa"|"SMAA") echo "🟢 High-quality Anti-Aliasing - Better than FXAA (Built-in VkBasalt)" ;;
+        "dls"|"DLS"|"denoised_luma_sharpening"|"Denoised_Luma_Sharpening") echo "🟢 Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in VkBasalt)" ;;
+        "border"|"Border") echo "Borders - Adds a frame around the image" ;;
+        "CRT"|"crt") echo "Retro Effect - Cathode Ray Tube television look" ;;
+        "cartoon"|"Cartoon") echo "Cartoon Style - Animated drawing effect" ;;
+        "chromatic_aberration"|"ChromaticAberration") echo "Chromatic Aberration - Separates RGB channels" ;;
+        "clarity"|"Clarity") echo "Clarity and Depth - Increases overall definition" ;;
+        "curves"|"Curves") echo "Curve Correction - Adjusts contrast and brightness" ;;
+        "dpx"|"DPX") echo "Cinematic Look - Professional film effect" ;;
+        "daltonize"|"Daltonize") echo "Color Blindness Correction - Helps with visual impairments" ;;
+        "defring"|"Defring") echo "Fringe Correction - Reduces OLED chromatic aberrations" ;;
+        "fake_hdr"|"FakeHDR") echo "Fake HDR - Simulates HDR effect" ;;
+        "filmgrain"|"FilmGrain") echo "Film Grain - Vintage film texture" ;;
+        "levels"|"Levels") echo "RGB Levels - Black/white threshold adjustment" ;;
+        "liftgammagain"|"LiftGammaGain") echo "LGG Correction - Precise tone control" ;;
+        "lumasharpen"|"LumaSharpen") echo "Luminance Sharpening - Enhances edges and details" ;;
+        "monochrome"|"Monochrome") echo "Monochrome - Black and white conversion" ;;
+        "nostalgia"|"Nostalgia") echo "Nostalgia - Old photo effect" ;;
+        "sepia"|"Sepia") echo "Sepia Effect - Vintage brown/beige tint" ;;
+        "smart_sharp"|"Smart_Sharp") echo "Depth Based Unsharp Mask Bilateral Contrast Adaptive Sharpening" ;;
+        "technicolor"|"Technicolor") echo "Vintage Technicolor Effect - Retro colorful style" ;;
+        "tonemap"|"Tonemap") echo "HDR Tone Mapping - Optimizes dynamic range" ;;
+        "vibrance"|"Vibrance") echo "Intelligent Saturation - Enhances colors naturally" ;;
+        "vignette"|"Vignette") echo "Vignetting - Darkens image edges" ;;
+        *) echo "$shader_name - Available graphics effect" ;;
+    esac
 }
 
 # Basic configurations
@@ -431,40 +384,197 @@ EOF
                 echo "smaaCornerRounding = 25" >> "$CONFIG_FILE"
                 echo "" >> "$CONFIG_FILE"
                 ;;
-            "lumasharpen")
-                echo "# LumaSharpen" >> "$CONFIG_FILE"
-                echo "lumaSharpenStrength = 0.65" >> "$CONFIG_FILE"
-                echo "lumaSharpenClamp = 0.035" >> "$CONFIG_FILE"
-                echo "lumasharpen = $SHADER_PATH/LumaSharpen.fx" >> "$CONFIG_FILE"
+            "dls")
+                echo "# DLS (Denoised Luma Sharpening) Settings" >> "$CONFIG_FILE"
+                echo "dlsSharpening = 0.5" >> "$CONFIG_FILE"
+                echo "dlsDenoise = 0.17" >> "$CONFIG_FILE"
                 echo "" >> "$CONFIG_FILE"
                 ;;
-            "vibrance")
-                echo "# Vibrance" >> "$CONFIG_FILE"
-                echo "vibranceStrength = 0.15" >> "$CONFIG_FILE"
-                echo "vibrance = $SHADER_PATH/Vibrance.fx" >> "$CONFIG_FILE"
-                echo "" >> "$CONFIG_FILE"
-                ;;
-            "dpx")
-                echo "# DPX" >> "$CONFIG_FILE"
-                echo "dpxSaturation = 3.0" >> "$CONFIG_FILE"
-                echo "dpxColorGamma = 2.5" >> "$CONFIG_FILE"
-                echo "dpxContrast = 0.1" >> "$CONFIG_FILE"
-                echo "dpx = $SHADER_PATH/DPX.fx" >> "$CONFIG_FILE"
-                echo "" >> "$CONFIG_FILE"
-                ;;
-            "clarity")
-                echo "# Clarity" >> "$CONFIG_FILE"
-                echo "clarityRadius = 3" >> "$CONFIG_FILE"
-                echo "clarityOffset = 2.0" >> "$CONFIG_FILE"
-                echo "clarityStrength = 0.4" >> "$CONFIG_FILE"
-                echo "clarity = $SHADER_PATH/Clarity.fx" >> "$CONFIG_FILE"
-                echo "" >> "$CONFIG_FILE"
+            *)
+                # For external shaders, add the path to the .fx file
+                local found_file=""
+
+                # 1. Try exact name
+                if [ -f "$SHADER_PATH/$shader.fx" ]; then
+                    found_file="$SHADER_PATH/$shader.fx"
+                # 2. Try with first letter capitalized
+                elif [ -f "$SHADER_PATH/${shader^}.fx" ]; then
+                    found_file="$SHADER_PATH/${shader^}.fx"
+                else
+                    # 3. Search for file with case-insensitive match
+                    if [ -d "$SHADER_PATH" ]; then
+                        for file in "$SHADER_PATH"/*.fx; do
+                            if [ -f "$file" ]; then
+                                local basename_file=$(basename "$file" .fx)
+                                if [[ "${basename_file,,}" == "${shader,,}" ]]; then
+                                    found_file="$file"
+                                    break
+                                fi
+                            fi
+                        done
+                    fi
+                fi
+
+                # Write shader path if found
+                if [ ! -z "$found_file" ]; then
+                    echo "# $shader shader path" >> "$CONFIG_FILE"
+                    echo "$shader = $found_file" >> "$CONFIG_FILE"
+                    echo "" >> "$CONFIG_FILE"
+                fi
                 ;;
         esac
     done
 }
 
-create_default_config() { create_dynamic_config "cas"; }
+create_default_config() {
+    create_dynamic_config "cas";
+}
+
+manage_shaders() {
+    # Read currently active effects from configuration file
+    local current_effects=""
+    if [ -f "$CONFIG_FILE" ]; then
+        current_effects=$(grep "^effects" "$CONFIG_FILE" | head -n1 | cut -d'=' -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+    fi
+
+    # Generate checklist dynamically
+    local checklist_items=()
+    local shader_name
+    local description
+    local enabled
+
+    # Convert current effects string to array
+    local current_effects_array=()
+    if [ ! -z "$current_effects" ]; then
+        IFS=':' read -ra current_effects_array <<< "$current_effects"
+    fi
+
+    # Function to check if an effect is enabled
+    is_effect_enabled() {
+        local effect_to_check="$1"
+        for active_effect in "${current_effects_array[@]}"; do
+            # Clean spaces
+            active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            if [[ "$active_effect" == "$effect_to_check" ]]; then
+                return 0  # Found
+            fi
+        done
+        return 1  # Not found
+    }
+
+    # First add built-in VkBasalt effects (always available)
+    local builtin_effects=("CAS" "FXAA" "SMAA" "DLS")
+    for shader_name in "${builtin_effects[@]}"; do
+        # For built-in effects, check lowercase version in config
+        local lowercase_name="${shader_name,,}"
+
+        enabled="FALSE"
+        if is_effect_enabled "$lowercase_name"; then
+            enabled="TRUE"
+        fi
+
+        # Get description
+        description=$(get_shader_description "$shader_name")
+        checklist_items+=("$enabled" "$shader_name" "$description")
+    done
+
+    # Then add available ReShade shaders from folder
+    if [ -d "$SHADER_PATH" ]; then
+        shopt -s nullglob
+        for file in "$SHADER_PATH"/*.fx; do
+            local file_basename=$(basename "$file" .fx)
+
+            # Avoid duplicates with built-in effects
+            local is_builtin=false
+            for builtin in "${builtin_effects[@]}"; do
+                if [[ "${file_basename,,}" == "${builtin,,}" ]]; then
+                    is_builtin=true
+                    break
+                fi
+            done
+
+            if [ "$is_builtin" = false ]; then
+                shader_name="$file_basename"
+
+                # Check if this external effect is enabled
+                enabled="FALSE"
+                if is_effect_enabled "$file_basename"; then
+                    enabled="TRUE"
+                else
+                    # Try case-insensitive comparison too
+                    for active_effect in "${current_effects_array[@]}"; do
+                        active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+                        if [[ "${active_effect,,}" == "${file_basename,,}" ]]; then
+                            enabled="TRUE"
+                            break
+                        fi
+                    done
+                fi
+
+                description=$(get_shader_description "$shader_name")
+                checklist_items+=("$enabled" "$shader_name" "$description")
+            fi
+        done
+        shopt -u nullglob
+    fi
+
+    if [ ${#checklist_items[@]} -eq 0 ]; then
+        show_error "No effects available"
+        return
+    fi
+
+    # Create a list of current effects for display (with display names)
+    local current_display_effects=""
+    for active_effect in "${current_effects_array[@]}"; do
+        active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        case "$active_effect" in
+            "cas") current_display_effects+="CAS:" ;;
+            "fxaa") current_display_effects+="FXAA:" ;;
+            "smaa") current_display_effects+="SMAA:" ;;
+            "dls") current_display_effects+="DLS:" ;;
+            *) current_display_effects+="$active_effect:" ;;
+        esac
+    done
+    current_display_effects="${current_display_effects%:}"  # Remove last ":"
+
+    # Display dynamic checklist (OPTIMIZED SIZE)
+    local selected_shaders
+    selected_shaders=$(zenity --list \
+        --title="VkBasalt Effects Selection" \
+        --text="Built-in VkBasalt effects (performant) & Available shaders\nCurrent: $current_display_effects\nCtrl+Click for multiple selection" \
+        --checklist \
+        --column="Enable" --column="Effect" --column="Description" \
+        --width=900 --height=500 --separator=":" \
+        "${checklist_items[@]}" \
+        2>/dev/null)
+
+    if [ $? -eq 0 ]; then
+        if [ -z "$selected_shaders" ]; then
+            if show_question "No effects selected.\nDo you want to disable all effects?"; then
+                create_minimal_config
+                show_info "All effects have been disabled"
+            fi
+        else
+            # Convert built-in effect names to lowercase for configuration
+            local config_effects=""
+            IFS=':' read -ra EFFECT_ARRAY <<< "$selected_shaders"
+            for effect in "${EFFECT_ARRAY[@]}"; do
+                case "$effect" in
+                    "CAS") config_effects+="cas:" ;;
+                    "FXAA") config_effects+="fxaa:" ;;
+                    "SMAA") config_effects+="smaa:" ;;
+                    "DLS") config_effects+="dls:" ;;
+                    *) config_effects+="$effect:" ;;
+                esac
+            done
+            # Remove last ":"
+            config_effects="${config_effects%:}"
+
+            create_dynamic_config "$config_effects"
+            show_info "Configuration updated with effects: $selected_shaders"
+        fi
+    fi
+}
 
 # Installation check
 check_status() {
@@ -478,7 +588,7 @@ check_status() {
     else
         status_text+="✗ Shaders: Not installed\n"
     fi
-    zenity --info --text="$status_text" --title="Installation Status" --width=400
+    zenity --info --text="$status_text" --title="Installation Status" --width=320 --height=180
 }
 
 # Unified main menu
@@ -513,211 +623,52 @@ show_config_menu() {
         --title="VkBasalt Manager - Configuration" \
         --text="VkBasalt is installed and ready! Choose an option:" \
         --column="Option" --column="Description" \
-        --width=600 --height=550 \
-        "Presets" "Apply a predefined configuration" \
+        --width=420 --height=320 \
         "Shaders" "Manage active shaders" \
         "Toggle Key" "Change toggle key" \
         "Advanced" "Advanced shader settings" \
         "View" "View current configuration" \
-        "Backup" "Backup management" \
         "Reset" "Reset to default values" \
-        "Usage" "Usage information" \
         "Status" "Check installation" \
-        "Uninstall" "Uninstall VkBasalt/Manager" \
+        "Uninstall" "Uninstallation" \
         2>/dev/null)
     case "$choice" in
-        "Presets") show_preset_menu ;;
         "Shaders") manage_shaders ;;
         "Toggle Key") change_toggle_key ;;
         "Advanced") show_advanced_menu ;;
         "View") show_current_config ;;
-        "Backup") show_backup_menu ;;
         "Reset")
             if show_question "⚠️ This will reset the configuration to default values.\nContinue?"; then
-                create_backup
                 create_default_config
-                show_info "✓ Configuration reset to default values"
+                show_info "Configuration reset to default values"
             fi
             ;;
-        "Usage") show_usage ;;
         "Status") check_status ;;
-        "Uninstall") show_uninstall_menu ;;
+        "Uninstall")
+            if show_question "🗑️ Uninstall VkBasalt?\n\n⚠️ WARNING: This will remove EVERYTHING:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n\nThis action is IRREVERSIBLE!\n\nDo you want to continue?"; then
+                uninstall_vkbasalt
+            fi
+            ;;
         *) exit 0 ;;
     esac
 }
 
-show_preset_menu() {
-    local choice=$(zenity --list \
-        --title="Predefined Configurations" \
-        --text="Choose a configuration:" \
-        --column="Preset" --column="Description" \
-        --width=600 --height=400 \
-        "Performance" "Light effects for better performance" \
-        "Quality" "Enhanced visuals with multiple effects" \
-        "Cinematic" "Cinema look with dramatic effects" \
-        "Minimal" "Sharpening only (CAS)" \
-        "Complete" "All effects enabled" \
-        2>/dev/null)
-    case "$choice" in
-        "Performance") apply_preset 1 ;;
-        "Quality") apply_preset 2 ;;
-        "Cinematic") apply_preset 3 ;;
-        "Minimal") apply_preset 4 ;;
-        "Complete") apply_preset 5 ;;
-    esac
-}
-
-apply_preset() {
-    local preset=$1
-    create_backup
-    case $preset in
-        1)
-            create_dynamic_config "cas:fxaa:smaa"
-            cat >> "$CONFIG_FILE" << EOF
-
-# Performance optimizations
-casSharpness = 0.4
-fxaaQualitySubpix = 0.75
-fxaaQualityEdgeThreshold = 0.125
-fxaaQualityEdgeThresholdMin = 0.0312
-smaaEdgeDetection = luma
-smaaThreshold = 0.05
-smaaMaxSearchSteps = 32
-smaaMaxSearchStepsDiag = 16
-smaaCornerRounding = 25
-EOF
-            show_info "✓ Performance configuration applied\nActive shaders: CAS, FXAA, SMAA"
-            ;;
-        2)
-            create_dynamic_config "cas:smaa:lumasharpen:vibrance"
-            cat >> "$CONFIG_FILE" << EOF
-
-# Quality optimizations
-casSharpness = 0.6
-smaaEdgeDetection = luma
-smaaThreshold = 0.05
-smaaMaxSearchSteps = 32
-smaaMaxSearchStepsDiag = 16
-smaaCornerRounding = 25
-lumaSharpenStrength = 0.65
-lumaSharpenClamp = 0.035
-vibranceStrength = 0.15
-depthCapture = off
-EOF
-            show_info "✓ Quality configuration applied\nActive shaders: CAS, SMAA, LumaSharpen, Vibrance"
-            ;;
-        3)
-            create_dynamic_config "dpx:vibrance"
-            cat >> "$CONFIG_FILE" << EOF
-
-# Cinematic optimizations
-dpxSaturation = 3.0
-dpxColorGamma = 2.5
-dpxContrast = 0.1
-vibranceStrength = 0.20
-depthCapture = off
-EOF
-            show_info "✓ Cinematic configuration applied\nActive shaders: DPX, Vibrance"
-            ;;
-        4)
-            create_dynamic_config "cas"
-            cat >> "$CONFIG_FILE" << EOF
-
-# Minimal optimizations
-casSharpness = 0.5
-depthCapture = off
-EOF
-            show_info "✓ Minimal configuration applied\nActive shader: CAS only"
-            ;;
-        5)
-            create_dynamic_config "cas:fxaa:smaa:lumasharpen:dpx:vibrance:clarity"
-            cat >> "$CONFIG_FILE" << EOF
-
-# Complete configuration optimizations
-casSharpness = 0.6
-fxaaQualitySubpix = 0.75
-fxaaQualityEdgeThreshold = 0.125
-fxaaQualityEdgeThresholdMin = 0.0312
-smaaEdgeDetection = luma
-smaaThreshold = 0.05
-smaaMaxSearchSteps = 32
-smaaMaxSearchStepsDiag = 16
-smaaCornerRounding = 25
-lumaSharpenStrength = 0.65
-lumaSharpenClamp = 0.035
-dpxSaturation = 3.0
-dpxContrast = 0.1
-vibranceStrength = 0.15
-clarityRadius = 3
-clarityOffset = 2.0
-clarityStrength = 0.4
-EOF
-            show_info "✓ Complete configuration applied\nAll active shaders: CAS, FXAA, SMAA, LumaSharpen, DPX, Vibrance, Clarity"
-            ;;
-    esac
-}
-
-manage_shaders() {
-    local current_effects=""
-    [ -f "$CONFIG_FILE" ] && current_effects=$(grep "^effects" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' ')
-    local cas_check="FALSE" fxaa_check="FALSE" smaa_check="FALSE" lumasharpen_check="FALSE" vibrance_check="FALSE" dpx_check="FALSE" clarity_check="FALSE"
-    [[ "$current_effects" == *"cas"* ]] && cas_check="TRUE"
-    [[ "$current_effects" == *"fxaa"* ]] && fxaa_check="TRUE"
-    [[ "$current_effects" == *"smaa"* ]] && smaa_check="TRUE"
-    [[ "$current_effects" == *"lumasharpen"* ]] && lumasharpen_check="TRUE"
-    [[ "$current_effects" == *"vibrance"* ]] && vibrance_check="TRUE"
-    [[ "$current_effects" == *"dpx"* ]] && dpx_check="TRUE"
-    [[ "$current_effects" == *"clarity"* ]] && clarity_check="TRUE"
-    local selected_shaders=$(zenity --list \
-        --title="Shader Selection" \
-        --text="Choose shaders to activate:\nCurrently active: $current_effects\n⚠️ Ctrl+Click to select multiple shaders" \
-        --checklist \
-        --column="Enable" --column="Shader" --column="Description" \
-        --width=700 --height=450 --separator=":" \
-        $cas_check "cas" "Contrast Adaptive Sharpening - AMD sharpening" \
-        $fxaa_check "fxaa" "Fast Approximate Anti-Aliasing - Fast AA" \
-        $smaa_check "smaa" "Subpixel Morphological Anti-Aliasing - HQ AA" \
-        $lumasharpen_check "lumasharpen" "Luminance sharpening" \
-        $vibrance_check "vibrance" "Smart saturation" \
-        $dpx_check "dpx" "Cinema look" \
-        $clarity_check "clarity" "Clarity and details" \
-        2>/dev/null)
-    if [ $? -eq 0 ]; then
-        create_backup
-        if [ -z "$selected_shaders" ]; then
-            if show_question "No shader selected.\nDo you want to disable all shaders?"; then
-                create_minimal_config
-                show_info "✓ All shaders have been disabled"
-            fi
-        else
-            create_dynamic_config "$selected_shaders"
-            show_info "✓ Configuration updated with shaders: $selected_shaders"
-        fi
-    fi
-}
-
 show_advanced_menu() {
     local choice=$(zenity --list \
-        --title="Advanced Settings" \
-        --text="Choose a shader to configure in detail:" \
-        --column="Shader" --column="Description" \
-        --width=700 --height=450 \
-        "CAS" "Contrast Adaptive Sharpening - AMD sharpening" \
-        "Clarity" "Clarity and details" \
-        "DPX" "Professional cinema look" \
-        "FXAA" "Fast Approximate Anti-Aliasing - Fast AA" \
-        "LumaSharpen" "Luminance sharpening" \
-        "SMAA" "Subpixel Morphological Anti-Aliasing - HQ AA" \
-        "Vibrance" "Smart saturation" \
+        --title="Advanced Settings - Built-in VkBasalt Effects" \
+        --text="Configure built-in VkBasalt effects:" \
+        --column="Effect" --column="Description" \
+        --width=500 --height=300 \
+        "CAS" "Contrast Adaptive Sharpening - AMD FidelityFX" \
+        "FXAA" "Fast Approximate Anti-Aliasing" \
+        "SMAA" "Subpixel Morphological Anti-Aliasing" \
+        "DLS" "Denoised Luma Sharpening - Intelligent sharpening" \
         2>/dev/null)
     case "$choice" in
         "CAS") configure_cas ;;
-        "Clarity") configure_clarity ;;
-        "DPX") configure_dpx ;;
         "FXAA") configure_fxaa ;;
-        "LumaSharpen") configure_lumasharpen ;;
         "SMAA") configure_smaa ;;
-        "Vibrance") configure_vibrance ;;
+        "DLS") configure_dls ;;
     esac
 }
 
@@ -730,8 +681,8 @@ change_toggle_key() {
         --text="Current key: ${current_key:-Home}\n\nChoose a new key to enable/disable VkBasalt effects:" \
         --column="Key" \
         --column="Description" \
-        --width=500 \
-        --height=500 \
+        --width=350 \
+        --height=540 \
         "Home" "Home key (recommended)" \
         "End" "End key" \
         "Insert" "Insert key" \
@@ -760,40 +711,47 @@ change_toggle_key() {
         2>/dev/null)
 
     if [ ! -z "$new_key" ]; then
-        create_backup
         sed -i "s/^toggleKey.*/toggleKey = $new_key/" "$CONFIG_FILE"
-        show_info "✓ Toggle key changed: $new_key\n\nNow use the '$new_key' key to enable/disable VkBasalt effects in your games."
+        show_info "Toggle key changed: $new_key\n\nNow use the '$new_key' key to enable/disable VkBasalt effects in your games."
     fi
 }
 
-# Sliders for each shader
+# Configuration functions for built-in VkBasalt effects
 configure_cas() {
     local cur=$(grep "^casSharpness" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local val=40; [ ! -z "$cur" ] && val=$(awk "BEGIN {printf \"%.0f\", $cur * 100}")
-    local sharpness=$(zenity --scale --title="CAS - Sharpness" --text="Current value: ${cur:-0.4}" --min-value=0 --max-value=100 --value=$val --step=5)
+    local sharpness=$(zenity --scale --title="CAS - Contrast Adaptive Sharpening" \
+        --text="Adjust sharpening strength\nCurrent value: ${cur:-0.4}\n\n0 = No sharpening\n100 = Maximum sharpening" \
+        --min-value=0 --max-value=100 --value=$val --step=5)
     if [ ! -z "$sharpness" ]; then
         local v=$(awk "BEGIN {printf \"%.2f\", $sharpness / 100}")
-        create_backup
         grep -q "^casSharpness" "$CONFIG_FILE" && sed -i "s/^casSharpness.*/casSharpness = $v/" "$CONFIG_FILE" || echo "casSharpness = $v" >> "$CONFIG_FILE"
-        show_info "✓ CAS sharpness adjusted to: $v ($sharpness%)"
+        show_info "CAS sharpness adjusted to: $v ($sharpness%)"
     fi
 }
 
 configure_fxaa() {
     local subpix=$(grep "^fxaaQualitySubpix" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local edge=$(grep "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+
+    # Subpixel quality
     local s=75; [ ! -z "$subpix" ] && s=$(awk "BEGIN {printf \"%.0f\", $subpix * 100}")
-    local sp=$(zenity --scale --title="FXAA - Subpix Quality" --text="Current value: ${subpix:-0.75}" --min-value=0 --max-value=100 --value=$s --step=5)
+    local sp=$(zenity --scale --title="FXAA - Subpixel Quality" \
+        --text="Adjust subpixel aliasing reduction\nCurrent value: ${subpix:-0.75}\n\n0 = No subpixel AA\n100 = Maximum subpixel AA" \
+        --min-value=0 --max-value=100 --value=$s --step=5)
     if [ ! -z "$sp" ]; then
         local spf=$(awk "BEGIN {printf \"%.2f\", $sp / 100}")
+
+        # Edge threshold
         local e=37; [ ! -z "$edge" ] && e=$(awk "BEGIN {printf \"%.0f\", ($edge - 0.063) * 100 / 0.27}")
-        local ed=$(zenity --scale --title="FXAA - Edge Threshold" --text="Current value: ${edge:-0.125}" --min-value=0 --max-value=100 --value=$e --step=5)
+        local ed=$(zenity --scale --title="FXAA - Edge Threshold" \
+            --text="Adjust edge detection sensitivity\nCurrent value: ${edge:-0.125}\n\n0 = Detect all edges (softer)\n100 = Detect only sharp edges (sharper)" \
+            --min-value=0 --max-value=100 --value=$e --step=5)
         if [ ! -z "$ed" ]; then
             local edf=$(awk "BEGIN {printf \"%.3f\", 0.063 + ($ed * 0.27 / 100)}")
-            create_backup
             grep -q "^fxaaQualitySubpix" "$CONFIG_FILE" && sed -i "s/^fxaaQualitySubpix.*/fxaaQualitySubpix = $spf/" "$CONFIG_FILE" || echo "fxaaQualitySubpix = $spf" >> "$CONFIG_FILE"
             grep -q "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" && sed -i "s/^fxaaQualityEdgeThreshold.*/fxaaQualityEdgeThreshold = $edf/" "$CONFIG_FILE" || echo "fxaaQualityEdgeThreshold = $edf" >> "$CONFIG_FILE"
-            show_info "✓ FXAA settings updated\nSubpix: $spf | Edge: $edf"
+            show_info "FXAA settings updated\nSubpixel Quality: $spf\nEdge Threshold: $edf"
         fi
     fi
 }
@@ -801,151 +759,75 @@ configure_fxaa() {
 configure_smaa() {
     local thresh=$(grep "^smaaThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local steps=$(grep "^smaaMaxSearchSteps" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local edge_detection=$(zenity --list --title="SMAA - Edge Detection" --text="Detection mode:" --column="Mode" --column="Description" --width=500 --height=300 "luma" "Luminance (recommended)" "color" "Color" "depth" "Depth" 2>/dev/null)
+
+    # Edge detection method
+    local edge_detection=$(zenity --list --title="SMAA - Edge Detection Method" \
+        --text="Choose edge detection method:" \
+        --column="Mode" --column="Description" \
+        --width=520 --height=280 \
+        "luma" "Luminance-based (recommended)" \
+        "color" "Color-based (more accurate)" \
+        "depth" "Depth-based (for 3D games)" \
+        2>/dev/null)
+
     if [ ! -z "$edge_detection" ]; then
+        # Threshold
         local t=25; [ ! -z "$thresh" ] && t=$(awk "BEGIN {printf \"%.0f\", ($thresh - 0.01) * 100 / 0.19}")
-        local th=$(zenity --scale --title="SMAA - Threshold" --text="Current value: ${thresh:-0.05}" --min-value=0 --max-value=100 --value=$t --step=5)
+        local th=$(zenity --scale --title="SMAA - Edge Detection Threshold" \
+            --text="Adjust edge detection sensitivity\nCurrent value: ${thresh:-0.05}\n\n0 = Detect all edges (softer)\n100 = Detect only sharp edges (sharper)" \
+            --min-value=0 --max-value=100 --value=$t --step=5)
+
         if [ ! -z "$th" ]; then
             local thf=$(awk "BEGIN {printf \"%.3f\", 0.01 + ($th * 0.19 / 100)}")
+
+            # Search steps
             local s=43; [ ! -z "$steps" ] && s=$(awk "BEGIN {printf \"%.0f\", ($steps - 8) * 100 / 56}")
-            local st=$(zenity --scale --title="SMAA - Search Steps" --text="Current value: ${steps:-32}" --min-value=0 --max-value=100 --value=$s --step=5)
+            local st=$(zenity --scale --title="SMAA - Maximum Search Steps" \
+                --text="Adjust search quality vs performance\nCurrent value: ${steps:-32}\n\n0 = Faster (lower quality)\n100 = Slower (higher quality)" \
+                --min-value=0 --max-value=100 --value=$s --step=5)
+
             if [ ! -z "$st" ]; then
                 local stf=$(awk "BEGIN {printf \"%.0f\", 8 + ($st * 56 / 100)}")
-                create_backup
                 grep -q "^smaaEdgeDetection" "$CONFIG_FILE" && sed -i "s/^smaaEdgeDetection.*/smaaEdgeDetection = $edge_detection/" "$CONFIG_FILE" || echo "smaaEdgeDetection = $edge_detection" >> "$CONFIG_FILE"
                 grep -q "^smaaThreshold" "$CONFIG_FILE" && sed -i "s/^smaaThreshold.*/smaaThreshold = $thf/" "$CONFIG_FILE" || echo "smaaThreshold = $thf" >> "$CONFIG_FILE"
                 grep -q "^smaaMaxSearchSteps" "$CONFIG_FILE" && sed -i "s/^smaaMaxSearchSteps.*/smaaMaxSearchSteps = $stf/" "$CONFIG_FILE" || echo "smaaMaxSearchSteps = $stf" >> "$CONFIG_FILE"
-                show_info "✓ SMAA updated\nDetection: $edge_detection | Threshold: $thf | Steps: $stf"
+                show_info "SMAA settings updated\nEdge Detection: $edge_detection\nThreshold: $thf\nMax Search Steps: $stf"
             fi
         fi
     fi
 }
 
-configure_dpx() {
-    local sat=$(grep "^dpxSaturation" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local gamma=$(grep "^dpxColorGamma" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local contrast=$(grep "^dpxContrast" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local sv=43; [ ! -z "$sat" ] && sv=$(awk "BEGIN {printf \"%.0f\", ($sat - 1.0) * 100 / 7.0}")
-    local saturation=$(zenity --scale --title="DPX - Saturation" --text="Current value: ${sat:-3.0}" --min-value=0 --max-value=100 --value=$sv --step=5)
-    if [ ! -z "$saturation" ]; then
-        local satf=$(awk "BEGIN {printf \"%.1f\", 1.0 + ($saturation * 7.0 / 100)}")
-        local gv=50; [ ! -z "$gamma" ] && gv=$(awk "BEGIN {printf \"%.0f\", ($gamma - 1.0) * 100 / 3.0}")
-        local gamma_val=$(zenity --scale --title="DPX - Gamma" --text="Current value: ${gamma:-2.5}" --min-value=0 --max-value=100 --value=$gv --step=5)
-        if [ ! -z "$gamma_val" ]; then
-            local gammaf=$(awk "BEGIN {printf \"%.1f\", 1.0 + ($gamma_val * 3.0 / 100)}")
-            local cv=55; [ ! -z "$contrast" ] && cv=$(awk "BEGIN {printf \"%.0f\", ($contrast + 1.0) * 100 / 2.0}")
-            local contrast_val=$(zenity --scale --title="DPX - Contrast" --text="Current value: ${contrast:-0.1}" --min-value=0 --max-value=100 --value=$cv --step=5)
-            if [ ! -z "$contrast_val" ]; then
-                local contrastf=$(awk "BEGIN {printf \"%.1f\", -1.0 + ($contrast_val * 2.0 / 100)}")
-                create_backup
-                grep -q "^dpxSaturation" "$CONFIG_FILE" && sed -i "s/^dpxSaturation.*/dpxSaturation = $satf/" "$CONFIG_FILE" || echo "dpxSaturation = $satf" >> "$CONFIG_FILE"
-                grep -q "^dpxColorGamma" "$CONFIG_FILE" && sed -i "s/^dpxColorGamma.*/dpxColorGamma = $gammaf/" "$CONFIG_FILE" || echo "dpxColorGamma = $gammaf" >> "$CONFIG_FILE"
-                grep -q "^dpxContrast" "$CONFIG_FILE" && sed -i "s/^dpxContrast.*/dpxContrast = $contrastf/" "$CONFIG_FILE" || echo "dpxContrast = $contrastf" >> "$CONFIG_FILE"
-                show_info "✓ DPX updated\nSaturation: $satf | Gamma: $gammaf | Contrast: $contrastf"
-            fi
-        fi
-    fi
-}
+configure_dls() {
+    local sharpening=$(grep "^dlsSharpening" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+    local denoise=$(grep "^dlsDenoise" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
-configure_lumasharpen() {
-    local strength=$(grep "^lumaSharpenStrength" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local clamp=$(grep "^lumaSharpenClamp" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local sv=22; [ ! -z "$strength" ] && sv=$(awk "BEGIN {printf \"%.0f\", $strength * 100 / 3.0}")
-    local s=$(zenity --scale --title="LumaSharpen - Strength" --text="Current value: ${strength:-0.65}" --min-value=0 --max-value=100 --value=$sv --step=5)
+    # Sharpening strength
+    local sv=50; [ ! -z "$sharpening" ] && sv=$(awk "BEGIN {printf \"%.0f\", $sharpening * 100}")
+    local s=$(zenity --scale --title="DLS - Sharpening Strength" \
+        --text="Adjust sharpening intensity\nCurrent value: ${sharpening:-0.5}\n\n0 = No sharpening\n100 = Maximum sharpening" \
+        --min-value=0 --max-value=100 --value=$sv --step=5)
+
     if [ ! -z "$s" ]; then
-        local sf=$(awk "BEGIN {printf \"%.2f\", $s * 3.0 / 100}")
-        local cv=4; [ ! -z "$clamp" ] && cv=$(awk "BEGIN {printf \"%.0f\", $clamp * 100}")
-        local c=$(zenity --scale --title="LumaSharpen - Clamp" --text="Current value: ${clamp:-0.035}" --min-value=0 --max-value=100 --value=$cv --step=1)
-        if [ ! -z "$c" ]; then
-            local cf=$(awk "BEGIN {printf \"%.3f\", $c / 100}")
-            create_backup
-            grep -q "^lumaSharpenStrength" "$CONFIG_FILE" && sed -i "s/^lumaSharpenStrength.*/lumaSharpenStrength = $sf/" "$CONFIG_FILE" || echo "lumaSharpenStrength = $sf" >> "$CONFIG_FILE"
-            grep -q "^lumaSharpenClamp" "$CONFIG_FILE" && sed -i "s/^lumaSharpenClamp.*/lumaSharpenClamp = $cf/" "$CONFIG_FILE" || echo "lumaSharpenClamp = $cf" >> "$CONFIG_FILE"
-            show_info "✓ LumaSharpen updated\nStrength: $sf | Clamp: $cf"
-        fi
-    fi
-}
+        local sf=$(awk "BEGIN {printf \"%.2f\", $s / 100}")
 
-configure_clarity() {
-    local radius=$(grep "^clarityRadius" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local offset=$(grep "^clarityOffset" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local strength=$(grep "^clarityStrength" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local rv=29; [ ! -z "$radius" ] && rv=$(awk "BEGIN {printf \"%.0f\", ($radius - 1) * 100 / 7}")
-    local r=$(zenity --scale --title="Clarity - Radius" --text="Current value: ${radius:-3}" --min-value=0 --max-value=100 --value=$rv --step=14)
-    if [ ! -z "$r" ]; then
-        local rf=$(awk "BEGIN {printf \"%.0f\", 1 + ($r * 7 / 100)}")
-        local ov=20; [ ! -z "$offset" ] && ov=$(awk "BEGIN {printf \"%.0f\", $offset * 10}")
-        local o=$(zenity --scale --title="Clarity - Offset" --text="Current value: ${offset:-2.0}" --min-value=0 --max-value=100 --value=$ov --step=5)
-        if [ ! -z "$o" ]; then
-            local of=$(awk "BEGIN {printf \"%.1f\", $o / 10}")
-            local sv=40; [ ! -z "$strength" ] && sv=$(awk "BEGIN {printf \"%.0f\", $strength * 100}")
-            local s=$(zenity --scale --title="Clarity - Strength" --text="Current value: ${strength:-0.4}" --min-value=0 --max-value=100 --value=$sv --step=5)
-            if [ ! -z "$s" ]; then
-                local sf=$(awk "BEGIN {printf \"%.2f\", $s / 100}")
-                create_backup
-                grep -q "^clarityRadius" "$CONFIG_FILE" && sed -i "s/^clarityRadius.*/clarityRadius = $rf/" "$CONFIG_FILE" || echo "clarityRadius = $rf" >> "$CONFIG_FILE"
-                grep -q "^clarityOffset" "$CONFIG_FILE" && sed -i "s/^clarityOffset.*/clarityOffset = $of/" "$CONFIG_FILE" || echo "clarityOffset = $of" >> "$CONFIG_FILE"
-                grep -q "^clarityStrength" "$CONFIG_FILE" && sed -i "s/^clarityStrength.*/clarityStrength = $sf/" "$CONFIG_FILE" || echo "clarityStrength = $sf" >> "$CONFIG_FILE"
-                show_info "✓ Clarity updated\nRadius: $rf | Offset: $of | Strength: $sf"
-            fi
-        fi
-    fi
-}
+        # Denoise strength
+        local dv=17; [ ! -z "$denoise" ] && dv=$(awk "BEGIN {printf \"%.0f\", $denoise * 100}")
+        local d=$(zenity --scale --title="DLS - Denoise Strength" \
+            --text="Adjust noise reduction\nCurrent value: ${denoise:-0.17}\n\n0 = No denoising\n100 = Maximum denoising" \
+            --min-value=0 --max-value=100 --value=$dv --step=5)
 
-configure_vibrance() {
-    local strength=$(grep "^vibranceStrength" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local sv=58; [ ! -z "$strength" ] && sv=$(awk "BEGIN {printf \"%.0f\", ($strength + 1.0) * 100 / 2.0}")
-    local s=$(zenity --scale --title="Vibrance - Strength" --text="Current value: ${strength:-0.15}" --min-value=0 --max-value=100 --value=$sv --step=5)
-    if [ ! -z "$s" ]; then
-        local sf=$(awk "BEGIN {printf \"%.2f\", -1.0 + ($s * 2.0 / 100)}")
-        create_backup
-        grep -q "^vibranceStrength" "$CONFIG_FILE" && sed -i "s/^vibranceStrength.*/vibranceStrength = $sf/" "$CONFIG_FILE" || echo "vibranceStrength = $sf" >> "$CONFIG_FILE"
-        show_info "✓ Vibrance updated\nStrength: $sf"
+        if [ ! -z "$d" ]; then
+            local df=$(awk "BEGIN {printf \"%.2f\", $d / 100}")
+            grep -q "^dlsSharpening" "$CONFIG_FILE" && sed -i "s/^dlsSharpening.*/dlsSharpening = $sf/" "$CONFIG_FILE" || echo "dlsSharpening = $sf" >> "$CONFIG_FILE"
+            grep -q "^dlsDenoise" "$CONFIG_FILE" && sed -i "s/^dlsDenoise.*/dlsDenoise = $df/" "$CONFIG_FILE" || echo "dlsDenoise = $df" >> "$CONFIG_FILE"
+            show_info "DLS settings updated\nSharpening: $sf\nDenoise: $df"
+        fi
     fi
 }
 
 show_current_config() {
-    [ -f "$CONFIG_FILE" ] && zenity --text-info --title="Current Configuration" --filename="$CONFIG_FILE" --width=600 --height=400 \
-        || show_error "❌ Configuration file not found"
-}
-
-show_backup_menu() {
-    local choice=$(zenity --list --title="Backup Management" --text="Backup options:" --column="Action" --column="Description" --width=500 --height=300 \
-        "Create" "Create a backup" "Restore" "Restore from backup" "Delete" "Delete backup" 2>/dev/null)
-    case "$choice" in
-        "Create") create_backup; show_info "✓ Backup created" ;;
-        "Restore") restore_backup ;;
-        "Delete") delete_backup ;;
-    esac
-}
-
-show_usage() {
-    zenity --info --title="How to use VkBasalt" --text="🎮 VkBasalt is installed and ready to use!
-═══ Activation in Steam games ═══
-
-1. Open Steam in Desktop mode
-2. Right-click on your game → Properties
-3. In launch options, add:
-   ENABLE_VKBASALT=1 %command%
-4. Launch the game
-5. Use the Home key to enable/disable
-
-═══ Available shaders ═══
-• CAS - AMD adaptive sharpening
-• FXAA - Fast anti-aliasing
-• SMAA - High quality anti-aliasing
-• LumaSharpen - Luminance sharpening
-• Vibrance - Smart saturation
-• DPX - Professional cinema look
-• Clarity - Clarity and details
-
-═══ Current configuration ═══
-File: $CONFIG_FILE
-Shaders: $SHADER_PATH
-Textures: $TEXTURE_PATH
-
-⚠️  VkBasalt only works with Vulkan games
-🎯 Toggle key configurable in Configuration → Toggle Key" --width=650 --height=500
+    [ -f "$CONFIG_FILE" ] && zenity --text-info --title="Current Configuration" --filename="$CONFIG_FILE" --width=560 --height=340 \
+        || show_error "Configuration file not found"
 }
 
 # Main function
