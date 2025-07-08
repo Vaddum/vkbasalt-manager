@@ -29,16 +29,10 @@ VkBasalt is a Vulkan post-processing layer that applies visual effects to games 
 
 ## 📦 Installation
 
-### Method 1: Download and Run
 1. Download the script: `vkbasalt-manager.sh`
 2. Make it executable: `chmod +x vkbasalt-manager.sh`
 3. Run it: `./vkbasalt-manager.sh`
 4. Follow the on-screen instructions for automatic installation
-
-### Method 2: One-line Installation
-```bash
-wget -q -O vkbasalt-manager.sh https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/main/vkbasalt-manager.sh && chmod +x vkbasalt-manager.sh && ./vkbasalt-manager.sh
-```
 
 ## 🎮 Usage
 
