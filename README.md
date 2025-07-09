@@ -22,9 +22,8 @@ A comprehensive graphical interface for installing, configuring, and managing Vk
 
 ### Installation
 
-1. Download the script:
+1. Download the script and run:
 ```bash
-vkbasalt_manager_universal.sh
 chmod +x vkbasalt_manager_universal.sh
 ```
 
