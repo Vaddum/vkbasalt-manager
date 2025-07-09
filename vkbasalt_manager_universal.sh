@@ -10,14 +10,27 @@ detect_system() {
         SYSTEM="steamdeck"
         USER_HOME="/home/deck"
         SYSTEM_USER="deck"
-    elif grep -q "CachyOS\|Arch Linux" /etc/os-release 2>/dev/null; then
+        PACKAGE_MANAGER="pacman"
+    elif grep -q "CachyOS" /etc/os-release 2>/dev/null; then
         SYSTEM="cachyos"
         USER_HOME="$HOME"
         SYSTEM_USER="$(whoami)"
+        # Check if paru is available, fallback to pacman
+        if command -v paru &> /dev/null; then
+            PACKAGE_MANAGER="paru"
+        else
+            PACKAGE_MANAGER="pacman"
+        fi
+    elif grep -q "Arch Linux" /etc/os-release 2>/dev/null; then
+        SYSTEM="arch"
+        USER_HOME="$HOME"
+        SYSTEM_USER="$(whoami)"
+        PACKAGE_MANAGER="pacman"
     else
         SYSTEM="generic"
         USER_HOME="$HOME"
         SYSTEM_USER="$(whoami)"
+        PACKAGE_MANAGER="unknown"
     fi
 }
 
@@ -33,6 +46,12 @@ ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.svg"
 # Desktop file location depends on system
 if [ "$SYSTEM" = "steamdeck" ]; then
     DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
+    mkdir -p "${USER_HOME}/Desktop"
+elif [ "$SYSTEM" = "cachyos" ]; then
+    # Pour CachyOS, créer le raccourci sur le bureau ET dans les applications
+    DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
+    DESKTOP_FILE_APPS="${USER_HOME}/.local/share/applications/VkBasalt-Manager.desktop"
+    mkdir -p "${USER_HOME}/Desktop" "${USER_HOME}/.local/share/applications"
 else
     DESKTOP_FILE="${USER_HOME}/.local/share/applications/VkBasalt-Manager.desktop"
     mkdir -p "${USER_HOME}/.local/share/applications"
@@ -41,32 +60,35 @@ fi
 # Check and install dependencies
 check_dependencies() {
     local missing_deps=()
-    
+
     # Check Zenity
     if ! command -v zenity &> /dev/null; then
         missing_deps+=("zenity")
     fi
-    
+
     # Check wget
     if ! command -v wget &> /dev/null; then
         missing_deps+=("wget")
     fi
-    
+
     # Check unzip
     if ! command -v unzip &> /dev/null; then
         missing_deps+=("unzip")
     fi
-    
+
     # Check tar
     if ! command -v tar &> /dev/null; then
         missing_deps+=("tar")
     fi
-    
+
     if [ ${#missing_deps[@]} -gt 0 ]; then
         echo "Installing missing dependencies: ${missing_deps[*]}"
-        
-        if command -v pacman &> /dev/null; then
-            # Arch/CachyOS/SteamOS
+
+        if [ "$PACKAGE_MANAGER" = "paru" ]; then
+            # CachyOS with Paru - no sudo needed for paru
+            paru -S --noconfirm "${missing_deps[@]}"
+        elif [ "$PACKAGE_MANAGER" = "pacman" ]; then
+            # Arch/SteamOS with Pacman
             if [ "$SYSTEM" = "steamdeck" ]; then
                 # SteamOS - disable readonly filesystem temporarily
                 if command -v steamos-readonly &> /dev/null; then
@@ -133,9 +155,17 @@ move_script_to_final_location() {
         cp "$current_script" "$SCRIPT_PATH"
         chmod +x "$SCRIPT_PATH"
         chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" 2>/dev/null || true
+
+        # Mettre à jour le chemin Exec dans le fichier .desktop principal
         if [ -f "$DESKTOP_FILE" ]; then
             sed -i "s|Exec=.*|Exec=$SCRIPT_PATH|" "$DESKTOP_FILE"
         fi
+
+        # Pour CachyOS, mettre à jour aussi le fichier d'applications
+        if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ] && [ -f "$DESKTOP_FILE_APPS" ]; then
+            sed -i "s|Exec=.*|Exec=$SCRIPT_PATH|" "$DESKTOP_FILE_APPS"
+        fi
+
         return 0
     fi
     return 1
@@ -145,10 +175,20 @@ move_script_to_final_location() {
 get_vkbasalt_packages() {
     if [ "$SYSTEM" = "cachyos" ]; then
         # CachyOS - use official repositories first, fallback to AUR
-        if pacman -Ss vkbasalt &>/dev/null; then
-            echo "REPO"  # Use repository packages
+        if [ "$PACKAGE_MANAGER" = "paru" ]; then
+            # With paru, check repositories first, then AUR
+            if paru -Ss vkbasalt 2>/dev/null | grep -q "^extra/\|^community/\|^core/\|^multilib/"; then
+                echo "REPO"  # Use repository packages
+            else
+                echo "AUR"   # Use AUR packages
+            fi
         else
-            echo "AUR"   # Use AUR packages
+            # Fallback to pacman check
+            if pacman -Ss vkbasalt &>/dev/null; then
+                echo "REPO"
+            else
+                echo "AUR"
+            fi
         fi
     else
         # SteamOS and others - use AUR
@@ -159,41 +199,48 @@ get_vkbasalt_packages() {
 # Install VkBasalt from repository (CachyOS)
 install_vkbasalt_repo() {
     echo "# Installing VkBasalt from repository..."
-    
-    if ! sudo pacman -S --noconfirm vkbasalt lib32-vkbasalt; then
-        echo "ERROR: Failed to install VkBasalt from repository"
-        return 1
+
+    if [ "$PACKAGE_MANAGER" = "paru" ]; then
+        if ! paru -S --noconfirm vkbasalt lib32-vkbasalt; then
+            echo "ERROR: Failed to install VkBasalt from repository with paru"
+            return 1
+        fi
+    else
+        if ! sudo pacman -S --noconfirm vkbasalt lib32-vkbasalt; then
+            echo "ERROR: Failed to install VkBasalt from repository with pacman"
+            return 1
+        fi
     fi
-    
+
     # Create symlinks in user directory for consistency
     mkdir -p "${USER_HOME}/.local/lib" "${USER_HOME}/.local/lib32" "${USER_HOME}/.local/share/vulkan/implicit_layer.d"
-    
+
     # Find installed libraries
     local vkbasalt_lib=$(find /usr/lib -name "libvkbasalt.so" 2>/dev/null | head -1)
     local vkbasalt_lib32=$(find /usr/lib32 -name "libvkbasalt.so" 2>/dev/null | head -1)
-    
+
     if [ -n "$vkbasalt_lib" ]; then
         ln -sf "$vkbasalt_lib" "${USER_HOME}/.local/lib/libvkbasalt.so"
     fi
-    
+
     if [ -n "$vkbasalt_lib32" ]; then
         ln -sf "$vkbasalt_lib32" "${USER_HOME}/.local/lib32/libvkbasalt.so"
     fi
-    
+
     # Copy Vulkan layer files
     if [ -f "/usr/share/vulkan/implicit_layer.d/vkBasalt.json" ]; then
         cp "/usr/share/vulkan/implicit_layer.d/vkBasalt.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/"
         sed -i "s|/usr/lib/libvkbasalt.so|${USER_HOME}/.local/lib/libvkbasalt.so|" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.json"
     fi
-    
+
     if [ -f "/usr/share/vulkan/implicit_layer.d/vkBasalt.x86.json" ]; then
         cp "/usr/share/vulkan/implicit_layer.d/vkBasalt.x86.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/"
         sed -i "s|/usr/lib32/libvkbasalt.so|${USER_HOME}/.local/lib32/libvkbasalt.so|" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.x86.json"
     fi
-    
+
     # Create config directories
     mkdir -p "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade"
-    
+
     # Copy example config if available
     if [ -f "/usr/share/vkBasalt/vkBasalt.conf.example" ]; then
         cp "/usr/share/vkBasalt/vkBasalt.conf.example" "${USER_HOME}/.config/vkBasalt/"
@@ -201,10 +248,10 @@ install_vkbasalt_repo() {
                -e "s|/opt/reshade/shaders|${USER_HOME}/.config/reshade/Shaders|" \
                "${USER_HOME}/.config/vkBasalt/vkBasalt.conf.example"
     fi
-    
+
     # Set permissions
     chown -R "${SYSTEM_USER}:${SYSTEM_USER}" "${USER_HOME}/.local/lib" "${USER_HOME}/.local/lib32" "${USER_HOME}/.local/share" "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade" 2>/dev/null || true
-    
+
     return 0
 }
 
@@ -216,6 +263,66 @@ install_vkbasalt_aur() {
         return 1
     fi
 
+    # If we have paru on CachyOS, use it for AUR packages
+    if [ "$SYSTEM" = "cachyos" ] && [ "$PACKAGE_MANAGER" = "paru" ]; then
+        echo "# Installing VkBasalt from AUR using paru..."
+
+        if ! paru -S --noconfirm vkbasalt lib32-vkbasalt; then
+            echo "ERROR: Failed to install VkBasalt from AUR with paru"
+            return 1
+        fi
+
+        # Create user directories and symlinks
+        mkdir -p "${USER_HOME}/.local/lib" "${USER_HOME}/.local/lib32" "${USER_HOME}/.local/share/vulkan/implicit_layer.d"
+        mkdir -p "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade"
+
+        # Find installed libraries and create symlinks
+        local vkbasalt_lib=$(find /usr/lib -name "libvkbasalt.so" 2>/dev/null | head -1)
+        local vkbasalt_lib32=$(find /usr/lib32 -name "libvkbasalt.so" 2>/dev/null | head -1)
+
+        if [ -n "$vkbasalt_lib" ]; then
+            ln -sf "$vkbasalt_lib" "${USER_HOME}/.local/lib/libvkbasalt.so"
+        fi
+
+        if [ -n "$vkbasalt_lib32" ]; then
+            ln -sf "$vkbasalt_lib32" "${USER_HOME}/.local/lib32/libvkbasalt.so"
+        fi
+
+        # Copy and configure Vulkan layer files
+        local env_var="ENABLE_VKBASALT"
+        if [ "$SYSTEM" = "steamdeck" ]; then
+            env_var="SteamDeck"
+        fi
+
+        if [ -f "/usr/share/vulkan/implicit_layer.d/vkBasalt.json" ]; then
+            cp "/usr/share/vulkan/implicit_layer.d/vkBasalt.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/"
+            sed -i -e "s|/usr/lib/libvkbasalt.so|${USER_HOME}/.local/lib/libvkbasalt.so|" \
+                   -e "s/ENABLE_VKBASALT/$env_var/" \
+                   "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.json"
+        fi
+
+        if [ -f "/usr/share/vulkan/implicit_layer.d/vkBasalt.x86.json" ]; then
+            cp "/usr/share/vulkan/implicit_layer.d/vkBasalt.x86.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/"
+            sed -i -e "s|/usr/lib32/libvkbasalt.so|${USER_HOME}/.local/lib32/libvkbasalt.so|" \
+                   -e "s/ENABLE_VKBASALT/$env_var/" \
+                   "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.x86.json"
+        fi
+
+        # Copy example config
+        if [ -f "/usr/share/vkBasalt/vkBasalt.conf.example" ]; then
+            cp "/usr/share/vkBasalt/vkBasalt.conf.example" "${USER_HOME}/.config/vkBasalt/"
+            sed -i -e "s|/opt/reshade/textures|${USER_HOME}/.config/reshade/Textures|" \
+                   -e "s|/opt/reshade/shaders|${USER_HOME}/.config/reshade/Shaders|" \
+                   "${USER_HOME}/.config/vkBasalt/vkBasalt.conf.example"
+        fi
+
+        # Set permissions
+        chown -R "${SYSTEM_USER}:${SYSTEM_USER}" "${USER_HOME}/.local/lib" "${USER_HOME}/.local/lib32" "${USER_HOME}/.local/share" "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade" 2>/dev/null || true
+
+        return 0
+    fi
+
+    # Fallback to manual installation from Chaotic AUR for other systems or when paru fails
     local AUR_BASE='https://builds.garudalinux.org/repos/chaotic-aur/x86_64/'
 
     local VKBASALT_PKG_VER
@@ -302,6 +409,9 @@ install_vkbasalt() {
         system_name="Steam Deck"
     elif [ "$SYSTEM" = "cachyos" ]; then
         system_name="CachyOS"
+        if [ "$PACKAGE_MANAGER" = "paru" ]; then
+            system_name="CachyOS (using Paru)"
+        fi
     fi
 
     show_info "🚀 VkBasalt Manager Installation\n\nInstalling on: $system_name\n\nThe installation will download and install:\n• VkBasalt\n• ReShade shaders\n• Default configurations\n• Graphical interface\n\nThis may take a few minutes..."
@@ -315,7 +425,7 @@ install_vkbasalt() {
 
         echo "30" ; echo "# Installing VkBasalt core..."
         local package_source=$(get_vkbasalt_packages)
-        
+
         if [ "$package_source" = "REPO" ]; then
             echo "# Using repository packages..."
             if ! install_vkbasalt_repo 2>&1; then
@@ -356,6 +466,12 @@ install_vkbasalt() {
         chmod +x "$SCRIPT_PATH" "$DESKTOP_FILE" 2>/dev/null || true
         chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE" 2>/dev/null || true
 
+        # Pour CachyOS, définir aussi les permissions pour le fichier d'applications
+        if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ] && [ -f "$DESKTOP_FILE_APPS" ]; then
+            chmod +x "$DESKTOP_FILE_APPS" 2>/dev/null || true
+            chown "${SYSTEM_USER}:${SYSTEM_USER}" "$DESKTOP_FILE_APPS" 2>/dev/null || true
+        fi
+
         echo "100" ; echo "# Installation complete!"
 
     ) | zenity --progress --title="VkBasalt Manager Installation" --text="Preparing..." --percentage=0 --auto-close --width=420 --height=110
@@ -365,14 +481,14 @@ install_vkbasalt() {
         if [ "$(realpath "$0")" != "$SCRIPT_PATH" ]; then
             script_moved_msg="\n\n📁 The script has been moved to: $SCRIPT_PATH\n💡 You can now delete the original script file."
         fi
-        
+
         local launch_instructions=""
         if [ "$SYSTEM" = "steamdeck" ]; then
             launch_instructions="🎮 To enable VkBasalt in a Steam game:\n1. Right-click on the game → Properties\n2. Launch options: ENABLE_VKBASALT=1 %command%\n3. Launch the game and use the Home key to toggle effects"
         else
             launch_instructions="🎮 To enable VkBasalt in a game:\n1. Launch with: ENABLE_VKBASALT=1 your_game\n2. Or set environment variable: export ENABLE_VKBASALT=1\n3. Use the Home key to toggle effects in-game"
         fi
-        
+
         show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n$launch_instructions\n\n🔧 Use this manager to configure effects and settings."
         return 0
     else
@@ -432,6 +548,7 @@ create_icon_and_desktop() {
 </svg>
 EOF
 
+    # Créer le fichier .desktop principal
     cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
@@ -447,6 +564,31 @@ StartupWMClass=zenity
 Categories=Game;Settings;
 MimeType=
 EOF
+
+    # Pour CachyOS, créer aussi le raccourci dans les applications
+    if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ]; then
+        cat > "$DESKTOP_FILE_APPS" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VkBasalt Manager
+Comment=VkBasalt manager with graphical interface
+Exec=$SCRIPT_PATH
+Icon=$ICON_PATH
+Terminal=false
+StartupNotify=true
+NoDisplay=false
+StartupWMClass=zenity
+Categories=Game;Settings;
+MimeType=
+EOF
+        # Rendre le fichier d'application exécutable
+        chmod +x "$DESKTOP_FILE_APPS" 2>/dev/null || true
+        chown "${SYSTEM_USER}:${SYSTEM_USER}" "$DESKTOP_FILE_APPS" 2>/dev/null || true
+    fi
+
+    # Rendre le fichier principal exécutable
+    chmod +x "$DESKTOP_FILE" 2>/dev/null || true
 }
 
 # Uninstall VkBasalt
@@ -456,13 +598,37 @@ uninstall_vkbasalt() {
             echo "10" ; echo "# Removing VkBasalt Manager..."
             rm -f "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE"
 
+            # Pour CachyOS, supprimer aussi le fichier d'applications
+            if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ]; then
+                rm -f "$DESKTOP_FILE_APPS"
+            fi
+
             echo "30" ; echo "# Removing VkBasalt..."
             rm -f "${USER_HOME}/.local/lib/libvkbasalt.so" "${USER_HOME}/.local/lib32/libvkbasalt.so"
             rm -f "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.x86.json"
 
             echo "50" ; echo "# Removing system packages..."
-            if [ "$SYSTEM" = "cachyos" ] && pacman -Qs vkbasalt &>/dev/null; then
-                sudo pacman -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
+            if [ "$SYSTEM" = "cachyos" ]; then
+                # On CachyOS, utiliser le même gestionnaire de paquets que pour l'installation
+                if [ "$PACKAGE_MANAGER" = "paru" ]; then
+                    # Vérifier si les paquets sont installés via paru/pacman
+                    if paru -Qs vkbasalt &>/dev/null; then
+                        echo "# Removing VkBasalt packages with paru..."
+                        paru -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
+                    fi
+                else
+                    # Fallback vers pacman si paru n'est pas disponible
+                    if pacman -Qs vkbasalt &>/dev/null; then
+                        echo "# Removing VkBasalt packages with pacman..."
+                        sudo pacman -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
+                    fi
+                fi
+            elif [ "$SYSTEM" = "arch" ] || [ "$SYSTEM" = "steamdeck" ]; then
+                # Pour Arch Linux et Steam Deck, utiliser pacman
+                if pacman -Qs vkbasalt &>/dev/null; then
+                    echo "# Removing VkBasalt packages with pacman..."
+                    sudo pacman -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
+                fi
             fi
 
             echo "60" ; echo "# Removing configurations..."
@@ -483,7 +649,7 @@ uninstall_vkbasalt() {
         else
             launch_note="💡 Don't forget to remove ENABLE_VKBASALT=1 from your game launch commands or environment variables."
         fi
-        
+
         show_info "✅ Uninstallation finished!\n\n$launch_note"
         exit 0
     fi
@@ -655,25 +821,29 @@ manage_shaders() {
 check_status() {
     local status_text=""
     local system_info=""
-    
+
     # System information
     if [ "$SYSTEM" = "steamdeck" ]; then
         system_info="System: Steam Deck (SteamOS)\n"
     elif [ "$SYSTEM" = "cachyos" ]; then
-        system_info="System: CachyOS\n"
+        if [ "$PACKAGE_MANAGER" = "paru" ]; then
+            system_info="System: CachyOS (using Paru)\n"
+        else
+            system_info="System: CachyOS (using Pacman)\n"
+        fi
     else
         system_info="System: $(grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d'"' -f2 || echo "Unknown")\n"
     fi
-    
+
     status_text+="$system_info"
-    
+
     # VkBasalt installation status
     [ -f "${USER_HOME}/.local/lib/libvkbasalt.so" ] && [ -f "${USER_HOME}/.local/lib32/libvkbasalt.so" ] \
         && status_text+="✓ VkBasalt: Installed\n" || status_text+="✗ VkBasalt: Not installed\n"
-    
+
     # Configuration status
     [ -f "$CONFIG_FILE" ] && status_text+="✓ Configuration: Found\n" || status_text+="⚠ Configuration: Missing\n"
-    
+
     # Shader status
     if [ -d "$SHADER_PATH" ] && [ "$(ls -A $SHADER_PATH 2>/dev/null)" ]; then
         local shader_count=$(ls -1 $SHADER_PATH/*.fx 2>/dev/null | wc -l)
@@ -681,14 +851,14 @@ check_status() {
     else
         status_text+="✗ Shaders: Not installed\n"
     fi
-    
+
     # Environment variable information
     if [ "$SYSTEM" = "steamdeck" ]; then
         status_text+="\n💡 Use: ENABLE_VKBASALT=1 %command% in Steam"
     else
         status_text+="\n💡 Use: ENABLE_VKBASALT=1 your_game"
     fi
-    
+
     zenity --info --text="$status_text" --title="Installation Status" --width=400 --height=250
 }
 
@@ -702,9 +872,13 @@ show_main_menu() {
         if [ "$SYSTEM" = "steamdeck" ]; then
             system_name="Steam Deck"
         elif [ "$SYSTEM" = "cachyos" ]; then
-            system_name="CachyOS"
+            if [ "$PACKAGE_MANAGER" = "paru" ]; then
+                system_name="CachyOS (using Paru)"
+            else
+                system_name="CachyOS"
+            fi
         fi
-        
+
         if show_question "🚀 VkBasalt Manager - First Use\n\nSystem detected: $system_name\n\nVkBasalt is not yet installed on your system.\n\nWould you like to proceed with automatic installation?"; then
             install_vkbasalt
             check_installation
@@ -738,7 +912,7 @@ show_config_menu() {
             "Uninstall" "Uninstall VkBasalt" \
             "Exit" "Exit VkBasalt Manager" \
             2>/dev/null)
-        
+
         case "$choice" in
             "Shaders") manage_shaders ;;
             "Toggle Key") change_toggle_key ;;
