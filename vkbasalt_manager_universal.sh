@@ -483,12 +483,6 @@ install_vkbasalt() {
         fi
 
         local launch_instructions=""
-        if [ "$SYSTEM" = "steamdeck" ]; then
-            launch_instructions="🎮 To enable VkBasalt in a Steam game:\n1. Right-click on the game → Properties\n2. Launch options: ENABLE_VKBASALT=1 %command%\n3. Launch the game and use the Home key to toggle effects"
-        else
-            launch_instructions="🎮 To enable VkBasalt in a game:\n1. Launch with: ENABLE_VKBASALT=1 your_game\n2. Or set environment variable: export ENABLE_VKBASALT=1\n3. Use the Home key to toggle effects in-game"
-        fi
-
         show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n$launch_instructions\n\n🔧 Use this manager to configure effects and settings."
         return 0
     else
@@ -1042,12 +1036,6 @@ check_status() {
         status_text+="✓ Shaders: $shader_count installed\n"
     else
         status_text+="✗ Shaders: Not installed\n"
-    fi
-
-    if [ "$SYSTEM" = "steamdeck" ]; then
-        status_text+="\n💡 Use: ENABLE_VKBASALT=1 %command% in Steam"
-    else
-        status_text+="\n💡 Use: ENABLE_VKBASALT=1 your_game"
     fi
 
     zenity --info --text="$status_text" --title="Installation Status" --width=400 --height=250
