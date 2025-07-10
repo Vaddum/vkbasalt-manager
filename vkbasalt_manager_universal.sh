@@ -655,7 +655,7 @@ uninstall_vkbasalt() {
     fi
 }
 
-# Get shader description
+# Get shader description with proper display name
 get_shader_description() {
     case "$1" in
         "cas"|"CAS") echo "⭐ AMD Adaptive Sharpening - Enhances details without artifacts (Built-in)" ;;
@@ -665,26 +665,165 @@ get_shader_description() {
         "border"|"Border") echo "Border - Adds customizable borders to fix edges" ;;
         "cartoon"|"Cartoon") echo "Cartoon - Creates cartoon-like edge enhancement" ;;
         "clarity"|"Clarity") echo "Clarity - Advanced sharpening with blur masking" ;;
-        "crt"|"CRT") echo "CRT - Simulates old CRT monitor appearance" ;;
+        "crt"|"CRT"|"Crt") echo "CRT - Simulates old CRT monitor appearance" ;;
         "curves"|"Curves") echo "Curves - S-curve contrast without clipping" ;;
         "daltonize"|"Daltonize") echo "Daltonize - Color blindness correction filter" ;;
         "defring"|"Defring") echo "Defring - Removes chromatic aberration/fringing" ;;
-        "dpx"|"DPX") echo "DPX - Film-style color grading effect" ;;
-        "fakehdr"|"FakeHDR") echo "Fake HDR - Simulates HDR with bloom effects" ;;
-        "filmgrain"|"FilmGrain") echo "Film Grain - Adds realistic film grain noise" ;;
+        "dpx"|"DPX"|"Dpx") echo "DPX - Film-style color grading effect" ;;
+        "fakehdr"|"FakeHDR"|"Fakehdr") echo "FakeHDR - Simulates HDR with bloom effects" ;;
+        "filmgrain"|"FilmGrain"|"Filmgrain") echo "FilmGrain - Adds realistic film grain noise" ;;
         "levels"|"Levels") echo "Levels - Adjusts black/white points range" ;;
-        "liftgammagain"|"LiftgGammaGain") echo "Lift Gamma Gain - Pro shadows/midtones/highlights tool" ;;
-        "lumasharpen"|"LumaSharpen") echo "Luma Sharpen - Luminance-based detail enhancement" ;;
+        "liftgammagain"|"LiftGammaGain"|"Liftgammagain") echo "LiftGammaGain - Pro shadows/midtones/highlights tool" ;;
+        "lumasharpen"|"LumaSharpen"|"Lumasharpen") echo "LumaSharpen - Luminance-based detail enhancement" ;;
         "monochrome"|"Monochrome") echo "Monochrome - B&W conversion with film presets" ;;
         "nostalgia"|"Nostalgia") echo "Nostalgia - Retro gaming visual style emulation" ;;
         "sepia"|"Sepia") echo "Sepia - Vintage sepia tone effect" ;;
-        "smartsharp"|"SmartSharp") echo "Smart Sharp - Depth-aware intelligent sharpening" ;;
+        "smartsharp"|"SmartSharp"|"Smartsharp") echo "SmartSharp - Depth-aware intelligent sharpening" ;;
         "technicolor"|"Technicolor") echo "Technicolor - Classic vibrant film process look" ;;
         "tonemap"|"Tonemap") echo "Tonemap - Comprehensive tone mapping controls" ;;
         "vibrance"|"Vibrance") echo "Vibrance - Smart saturation enhancement tool" ;;
         "vignette"|"Vignette") echo "Vignette - Darkened edges camera lens effect" ;;
         *) echo "$1 - Available graphics effect" ;;
     esac
+}
+
+# Get proper display name for effect
+get_display_name() {
+    case "${1,,}" in
+        "cas") echo "CAS" ;;
+        "fxaa") echo "FXAA" ;;
+        "smaa") echo "SMAA" ;;
+        "dls") echo "DLS" ;;
+        "border") echo "Border" ;;
+        "cartoon") echo "Cartoon" ;;
+        "clarity") echo "Clarity" ;;
+        "crt") echo "CRT" ;;
+        "curves") echo "Curves" ;;
+        "daltonize") echo "Daltonize" ;;
+        "defring") echo "Defring" ;;
+        "dpx") echo "DPX" ;;
+        "fakehdr") echo "FakeHDR" ;;
+        "filmgrain") echo "FilmGrain" ;;
+        "levels") echo "Levels" ;;
+        "liftgammagain") echo "LiftGammaGain" ;;
+        "lumasharpen") echo "LumaSharpen" ;;
+        "monochrome") echo "Monochrome" ;;
+        "nostalgia") echo "Nostalgia" ;;
+        "sepia") echo "Sepia" ;;
+        "smartsharp") echo "SmartSharp" ;;
+        "technicolor") echo "Technicolor" ;;
+        "tonemap") echo "Tonemap" ;;
+        "vibrance") echo "Vibrance" ;;
+        "vignette") echo "Vignette" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+# Shader management
+manage_shaders() {
+    local current_effects=""
+    if [ -f "$CONFIG_FILE" ]; then
+        current_effects=$(grep "^effects" "$CONFIG_FILE" | head -n1 | cut -d'=' -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+    fi
+
+    local checklist_items=()
+    local current_effects_array=()
+    if [ ! -z "$current_effects" ]; then
+        IFS=':' read -ra current_effects_array <<< "$current_effects"
+    fi
+
+    is_effect_enabled() {
+        local effect_to_check="$1"
+        for active_effect in "${current_effects_array[@]}"; do
+            active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            if [[ "${active_effect,,}" == "${effect_to_check,,}" ]]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
+    local builtin_effects=("CAS" "FXAA" "SMAA" "DLS")
+    for shader_name in "${builtin_effects[@]}"; do
+        local lowercase_name="${shader_name,,}"
+        local enabled="FALSE"
+        is_effect_enabled "$lowercase_name" && enabled="TRUE"
+        local display_name=$(get_display_name "$shader_name")
+        local description=$(get_shader_description "$shader_name")
+        checklist_items+=("$enabled" "$display_name" "$description")
+    done
+
+    if [ -d "$SHADER_PATH" ]; then
+        for file in "$SHADER_PATH"/*.fx; do
+            [ -f "$file" ] || continue
+            local file_basename=$(basename "$file" .fx)
+
+            local is_builtin=false
+            for builtin in "${builtin_effects[@]}"; do
+                if [[ "${file_basename,,}" == "${builtin,,}" ]]; then
+                    is_builtin=true
+                    break
+                fi
+            done
+
+            if [ "$is_builtin" = false ]; then
+                local enabled="FALSE"
+                is_effect_enabled "${file_basename}" && enabled="TRUE"
+                local display_name=$(get_display_name "$file_basename")
+                local description=$(get_shader_description "$file_basename")
+                checklist_items+=("$enabled" "$display_name" "$description")
+            fi
+        done
+    fi
+
+    if [ ${#checklist_items[@]} -eq 0 ]; then
+        show_error "No effects available"
+        return
+    fi
+
+    local selected_shaders
+    selected_shaders=$(zenity --list --title="VkBasalt Effects Selection" --text="Select effects to enable (Ctrl+Click for multiple):" --checklist --column="Enable" --column="Effect" --column="Description" --width=900 --height=500 --separator=":" "${checklist_items[@]}" 2>/dev/null)
+
+    if [ $? -eq 0 ]; then
+        if [ -z "$selected_shaders" ]; then
+            if show_question "No effects selected. Disable all effects?"; then
+                create_minimal_config
+                show_info "All effects disabled"
+            fi
+        else
+            # Convert display names back to config names (lowercase)
+            local config_shaders=""
+            IFS=':' read -ra SELECTED_ARRAY <<< "$selected_shaders"
+            for display_shader in "${SELECTED_ARRAY[@]}"; do
+                # Convert display name back to lowercase for config
+                local config_name="${display_shader,,}"
+                # Handle special cases
+                case "$display_shader" in
+                    "CAS") config_name="cas" ;;
+                    "FXAA") config_name="fxaa" ;;
+                    "SMAA") config_name="smaa" ;;
+                    "DLS") config_name="dls" ;;
+                    "CRT") config_name="crt" ;;
+                    "DPX") config_name="dpx" ;;
+                    "FakeHDR") config_name="fakehdr" ;;
+                    "FilmGrain") config_name="filmgrain" ;;
+                    "LiftGammaGain") config_name="liftgammagain" ;;
+                    "LumaSharpen") config_name="lumasharpen" ;;
+                    "SmartSharp") config_name="smartsharp" ;;
+                    *) config_name="${display_shader,,}" ;;
+                esac
+                
+                if [ -z "$config_shaders" ]; then
+                    config_shaders="$config_name"
+                else
+                    config_shaders="$config_shaders:$config_name"
+                fi
+            done
+            
+            create_dynamic_config "$config_shaders"
+            show_info "Configuration updated with effects: $selected_shaders"
+        fi
+    fi
 }
 
 # Configuration functions
@@ -796,8 +935,9 @@ manage_shaders() {
         local lowercase_name="${shader_name,,}"
         local enabled="FALSE"
         is_effect_enabled "$lowercase_name" && enabled="TRUE"
+        local display_name=$(get_display_name "$shader_name")
         local description=$(get_shader_description "$shader_name")
-        checklist_items+=("$enabled" "$shader_name" "$description")
+        checklist_items+=("$enabled" "$display_name" "$description")
     done
 
     if [ -d "$SHADER_PATH" ]; then
@@ -816,8 +956,9 @@ manage_shaders() {
             if [ "$is_builtin" = false ]; then
                 local enabled="FALSE"
                 is_effect_enabled "${file_basename}" && enabled="TRUE"
+                local display_name=$(get_display_name "$file_basename")
                 local description=$(get_shader_description "$file_basename")
-                checklist_items+=("$enabled" "$file_basename" "$description")
+                checklist_items+=("$enabled" "$display_name" "$description")
             fi
         done
     fi
@@ -837,7 +978,36 @@ manage_shaders() {
                 show_info "All effects disabled"
             fi
         else
-            create_dynamic_config "$selected_shaders"
+            # Convert display names back to config names (lowercase)
+            local config_shaders=""
+            IFS=':' read -ra SELECTED_ARRAY <<< "$selected_shaders"
+            for display_shader in "${SELECTED_ARRAY[@]}"; do
+                # Convert display name back to lowercase for config
+                local config_name="${display_shader,,}"
+                # Handle special cases
+                case "$display_shader" in
+                    "CAS") config_name="cas" ;;
+                    "FXAA") config_name="fxaa" ;;
+                    "SMAA") config_name="smaa" ;;
+                    "DLS") config_name="dls" ;;
+                    "CRT") config_name="crt" ;;
+                    "DPX") config_name="dpx" ;;
+                    "FakeHDR") config_name="fakehdr" ;;
+                    "FilmGrain") config_name="filmgrain" ;;
+                    "LiftGammaGain") config_name="liftgammagain" ;;
+                    "LumaSharpen") config_name="lumasharpen" ;;
+                    "SmartSharp") config_name="smartsharp" ;;
+                    *) config_name="${display_shader,,}" ;;
+                esac
+                
+                if [ -z "$config_shaders" ]; then
+                    config_shaders="$config_name"
+                else
+                    config_shaders="$config_shaders:$config_name"
+                fi
+            done
+            
+            create_dynamic_config "$config_shaders"
             show_info "Configuration updated with effects: $selected_shaders"
         fi
     fi
