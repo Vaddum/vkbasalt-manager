@@ -483,7 +483,7 @@ install_vkbasalt() {
         fi
 
         local launch_instructions=""
-        show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n$launch_instructions\n\n🔧 Use this manager to configure effects and settings."
+        show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n🔧 Use this manager to configure effects and settings."
         return 0
     else
         show_error "❌ Installation failed!\n\nPossible causes:\n• Network connection issues\n• Missing dependencies\n• Insufficient permissions\n\nPlease check your internet connection and try again."
