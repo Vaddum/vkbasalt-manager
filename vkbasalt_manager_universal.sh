@@ -649,6 +649,8 @@ get_shader_description() {
         "fxaa"|"FXAA") echo "⭐ Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
         "smaa"|"SMAA") echo "⭐ High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
         "dls"|"DLS") echo "⭐ Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
+        "4xbrz"|"4xBRZ") echo "🔴 4xBRZ - Complex pixel art upscaling algorithm for retro games" ;; 
+        "adaptivesharpen"|"AdaptiveSharpen") echo "🟠 Adaptive Sharpen - Smart edge-aware sharpening with minimal artifacts" ;;
         "border"|"Border") echo "🟢 Border - Adds customizable borders to fix edges" ;;
         "cartoon"|"Cartoon") echo "🟠 Cartoon - Creates cartoon-like edge enhancement" ;;
         "clarity"|"Clarity") echo "🔴 Clarity - Advanced sharpening with blur masking" ;;
@@ -681,6 +683,8 @@ get_display_name() {
         "fxaa") echo "FXAA" ;;
         "smaa") echo "SMAA" ;;
         "dls") echo "DLS" ;;
+        "4xbrz") echo "4xBRZ" ;;
+        "adaptivesharpen") echo "AdaptiveSharpen" ;;
         "border") echo "Border" ;;
         "cartoon") echo "Cartoon" ;;
         "clarity") echo "Clarity" ;;
@@ -790,6 +794,8 @@ manage_shaders() {
                     "FXAA") config_name="fxaa" ;;
                     "SMAA") config_name="smaa" ;;
                     "DLS") config_name="dls" ;;
+                    "4xBRZ") config_name="4xbrz" ;;
+                    "AdaptiveSharpen") config_name="adaptivesharpen" ;;
                     "CRT") config_name="crt" ;;
                     "DPX") config_name="dpx" ;;
                     "FakeHDR") config_name="fakehdr" ;;
