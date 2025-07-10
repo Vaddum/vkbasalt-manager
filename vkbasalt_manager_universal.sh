@@ -658,15 +658,10 @@ uninstall_vkbasalt() {
 # Get shader description
 get_shader_description() {
     case "$1" in
-        "cas"|"CAS") echo "🟢 AMD Adaptive Sharpening - Enhances details without artifacts (Built-in)" ;;
-        "fxaa"|"FXAA") echo "🟢 Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
-        "smaa"|"SMAA") echo "🟢 High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
-        "dls"|"DLS") echo "🟢 Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
-        "CRT"|"crt") echo "Retro Effect - Cathode Ray Tube television look" ;;
-        "clarity"|"Clarity") echo "Clarity and Depth - Increases overall definition" ;;
-        "fake_hdr"|"FakeHDR") echo "Fake HDR - Simulates HDR effect" ;;
-        "lumasharpen"|"LumaSharpen") echo "Luminance Sharpening - Enhances edges and details" ;;
-        "vibrance"|"Vibrance") echo "Intelligent Saturation - Enhances colors naturally" ;;
+        "cas"|"CAS") echo "AMD Adaptive Sharpening - Enhances details without artifacts (Built-in)" ;;
+        "fxaa"|"FXAA") echo "Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
+        "smaa"|"SMAA") echo "High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
+        "dls"|"DLS") echo "Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
         *) echo "$1 - Available graphics effect" ;;
     esac
 }
@@ -678,6 +673,7 @@ create_minimal_config() {
 effects =
 reshadeTexturePath = $TEXTURE_PATH
 reshadeIncludePath = $SHADER_PATH
+depthCapture = off
 toggleKey = Home
 enableOnLaunch = True
 EOF
@@ -685,18 +681,32 @@ EOF
 
 create_dynamic_config() {
     local selected_shaders="$1"
+    local lowercase_shaders=""
+    IFS=':' read -ra SHADER_ARRAY <<< "$selected_shaders"
+    for shader in "${SHADER_ARRAY[@]}"; do
+        if [ -z "$lowercase_shaders" ]; then
+            lowercase_shaders="${shader,,}"
+        else
+            lowercase_shaders="${lowercase_shaders}:${shader,,}"
+        fi
+    done
+
     mkdir -p "$(dirname "$CONFIG_FILE")"
     cat > "$CONFIG_FILE" << EOF
-effects = $selected_shaders
+effects = $lowercase_shaders
 reshadeTexturePath = $TEXTURE_PATH
 reshadeIncludePath = $SHADER_PATH
+depthCapture = off
 toggleKey = Home
 enableOnLaunch = True
 
 EOF
-    IFS=':' read -ra SHADER_ARRAY <<< "$selected_shaders"
+
     for shader in "${SHADER_ARRAY[@]}"; do
-        case "$shader" in
+        shader=$(echo "$shader" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        local shader_lower="${shader,,}"
+
+        case "$shader_lower" in
             "cas")
                 echo "casSharpness = 0.4" >> "$CONFIG_FILE"
                 ;;
@@ -714,10 +724,18 @@ EOF
                 echo "dlsDenoise = 0.17" >> "$CONFIG_FILE"
                 ;;
             *)
-                if [ -f "$SHADER_PATH/$shader.fx" ]; then
-                    echo "$shader = $SHADER_PATH/$shader.fx" >> "$CONFIG_FILE"
-                elif [ -f "$SHADER_PATH/${shader^}.fx" ]; then
-                    echo "$shader = $SHADER_PATH/${shader^}.fx" >> "$CONFIG_FILE"
+                local shader_path=""
+                local name_variations=("$shader" "${shader,,}" "${shader^^}" "${shader^}")
+
+                for name_var in "${name_variations[@]}"; do
+                    if [ -f "$SHADER_PATH/$name_var.fx" ]; then
+                        shader_path="$SHADER_PATH/$name_var.fx"
+                        break
+                    fi
+                done
+
+                if [ ! -z "$shader_path" ]; then
+                    echo "$shader_lower = $shader_path" >> "$CONFIG_FILE"
                 fi
                 ;;
         esac
@@ -741,19 +759,17 @@ manage_shaders() {
         IFS=':' read -ra current_effects_array <<< "$current_effects"
     fi
 
-    # Check if effect is enabled
     is_effect_enabled() {
         local effect_to_check="$1"
         for active_effect in "${current_effects_array[@]}"; do
             active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
-            if [[ "$active_effect" == "$effect_to_check" ]]; then
+            if [[ "${active_effect,,}" == "${effect_to_check,,}" ]]; then
                 return 0
             fi
         done
         return 1
     }
 
-    # Add built-in effects
     local builtin_effects=("CAS" "FXAA" "SMAA" "DLS")
     for shader_name in "${builtin_effects[@]}"; do
         local lowercase_name="${shader_name,,}"
@@ -763,11 +779,11 @@ manage_shaders() {
         checklist_items+=("$enabled" "$shader_name" "$description")
     done
 
-    # Add ReShade shaders
     if [ -d "$SHADER_PATH" ]; then
         for file in "$SHADER_PATH"/*.fx; do
             [ -f "$file" ] || continue
             local file_basename=$(basename "$file" .fx)
+
             local is_builtin=false
             for builtin in "${builtin_effects[@]}"; do
                 if [[ "${file_basename,,}" == "${builtin,,}" ]]; then
@@ -775,9 +791,10 @@ manage_shaders() {
                     break
                 fi
             done
+
             if [ "$is_builtin" = false ]; then
                 local enabled="FALSE"
-                is_effect_enabled "$file_basename" && enabled="TRUE"
+                is_effect_enabled "${file_basename}" && enabled="TRUE"
                 local description=$(get_shader_description "$file_basename")
                 checklist_items+=("$enabled" "$file_basename" "$description")
             fi
@@ -799,19 +816,7 @@ manage_shaders() {
                 show_info "All effects disabled"
             fi
         else
-            local config_effects=""
-            IFS=':' read -ra EFFECT_ARRAY <<< "$selected_shaders"
-            for effect in "${EFFECT_ARRAY[@]}"; do
-                case "$effect" in
-                    "CAS") config_effects+="cas:" ;;
-                    "FXAA") config_effects+="fxaa:" ;;
-                    "SMAA") config_effects+="smaa:" ;;
-                    "DLS") config_effects+="dls:" ;;
-                    *) config_effects+="$effect:" ;;
-                esac
-            done
-            config_effects="${config_effects%:}"
-            create_dynamic_config "$config_effects"
+            create_dynamic_config "$selected_shaders"
             show_info "Configuration updated with effects: $selected_shaders"
         fi
     fi
@@ -822,7 +827,6 @@ check_status() {
     local status_text=""
     local system_info=""
 
-    # System information
     if [ "$SYSTEM" = "steamdeck" ]; then
         system_info="System: Steam Deck (SteamOS)\n"
     elif [ "$SYSTEM" = "cachyos" ]; then
@@ -837,14 +841,11 @@ check_status() {
 
     status_text+="$system_info"
 
-    # VkBasalt installation status
     [ -f "${USER_HOME}/.local/lib/libvkbasalt.so" ] && [ -f "${USER_HOME}/.local/lib32/libvkbasalt.so" ] \
         && status_text+="✓ VkBasalt: Installed\n" || status_text+="✗ VkBasalt: Not installed\n"
 
-    # Configuration status
     [ -f "$CONFIG_FILE" ] && status_text+="✓ Configuration: Found\n" || status_text+="⚠ Configuration: Missing\n"
 
-    # Shader status
     if [ -d "$SHADER_PATH" ] && [ "$(ls -A $SHADER_PATH 2>/dev/null)" ]; then
         local shader_count=$(ls -1 $SHADER_PATH/*.fx 2>/dev/null | wc -l)
         status_text+="✓ Shaders: $shader_count installed\n"
@@ -852,7 +853,6 @@ check_status() {
         status_text+="✗ Shaders: Not installed\n"
     fi
 
-    # Environment variable information
     if [ "$SYSTEM" = "steamdeck" ]; then
         status_text+="\n💡 Use: ENABLE_VKBASALT=1 %command% in Steam"
     else
@@ -1013,7 +1013,6 @@ configure_fxaa() {
     local subpix=$(grep "^fxaaQualitySubpix" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local edge=$(grep "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
-    # Subpixel quality
     local s=75; [ ! -z "$subpix" ] && s=$(awk "BEGIN {printf \"%.0f\", $subpix * 100}")
     local sp=$(zenity --scale --title="FXAA - Subpixel Quality" \
         --text="Adjust subpixel aliasing reduction\nCurrent value: ${subpix:-0.75}\n\n0 = No subpixel AA\n100 = Maximum subpixel AA" \
@@ -1021,7 +1020,6 @@ configure_fxaa() {
     if [ ! -z "$sp" ]; then
         local spf=$(awk "BEGIN {printf \"%.2f\", $sp / 100}")
 
-        # Edge threshold
         local e=37; [ ! -z "$edge" ] && e=$(awk "BEGIN {printf \"%.0f\", ($edge - 0.063) * 100 / 0.27}")
         local ed=$(zenity --scale --title="FXAA - Edge Threshold" \
             --text="Adjust edge detection sensitivity\nCurrent value: ${edge:-0.125}\n\n0 = Detect all edges (softer)\n100 = Detect only sharp edges (sharper)" \
@@ -1039,7 +1037,6 @@ configure_smaa() {
     local thresh=$(grep "^smaaThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local steps=$(grep "^smaaMaxSearchSteps" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
-    # Edge detection method
     local edge_detection=$(zenity --list --title="SMAA - Edge Detection Method" \
         --text="Choose edge detection method:" \
         --column="Mode" --column="Description" \
@@ -1050,7 +1047,6 @@ configure_smaa() {
         2>/dev/null)
 
     if [ ! -z "$edge_detection" ]; then
-        # Threshold
         local t=25; [ ! -z "$thresh" ] && t=$(awk "BEGIN {printf \"%.0f\", ($thresh - 0.01) * 100 / 0.19}")
         local th=$(zenity --scale --title="SMAA - Edge Detection Threshold" \
             --text="Adjust edge detection sensitivity\nCurrent value: ${thresh:-0.05}\n\n0 = Detect all edges (softer)\n100 = Detect only sharp edges (sharper)" \
@@ -1059,7 +1055,6 @@ configure_smaa() {
         if [ ! -z "$th" ]; then
             local thf=$(awk "BEGIN {printf \"%.3f\", 0.01 + ($th * 0.19 / 100)}")
 
-            # Search steps
             local s=43; [ ! -z "$steps" ] && s=$(awk "BEGIN {printf \"%.0f\", ($steps - 8) * 100 / 56}")
             local st=$(zenity --scale --title="SMAA - Maximum Search Steps" \
                 --text="Adjust search quality vs performance\nCurrent value: ${steps:-32}\n\n0 = Faster (lower quality)\n100 = Slower (higher quality)" \
@@ -1080,7 +1075,6 @@ configure_dls() {
     local sharpening=$(grep "^dlsSharpening" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local denoise=$(grep "^dlsDenoise" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
-    # Sharpening strength
     local sv=50; [ ! -z "$sharpening" ] && sv=$(awk "BEGIN {printf \"%.0f\", $sharpening * 100}")
     local s=$(zenity --scale --title="DLS - Sharpening Strength" \
         --text="Adjust sharpening intensity\nCurrent value: ${sharpening:-0.5}\n\n0 = No sharpening\n100 = Maximum sharpening" \
@@ -1089,7 +1083,6 @@ configure_dls() {
     if [ ! -z "$s" ]; then
         local sf=$(awk "BEGIN {printf \"%.2f\", $s / 100}")
 
-        # Denoise strength
         local dv=17; [ ! -z "$denoise" ] && dv=$(awk "BEGIN {printf \"%.0f\", $denoise * 100}")
         local d=$(zenity --scale --title="DLS - Denoise Strength" \
             --text="Adjust noise reduction\nCurrent value: ${denoise:-0.17}\n\n0 = No denoising\n100 = Maximum denoising" \
