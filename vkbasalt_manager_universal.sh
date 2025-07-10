@@ -662,6 +662,27 @@ get_shader_description() {
         "fxaa"|"FXAA") echo "⭐ Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
         "smaa"|"SMAA") echo "⭐ High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
         "dls"|"DLS") echo "⭐ Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
+        "border"|"Border") echo "Border - Adds customizable borders to fix edges" ;;
+        "cartoon"|"Cartoon") echo "Cartoon - Creates cartoon-like edge enhancement" ;;
+        "clarity"|"Clarity") echo "Clarity - Advanced sharpening with blur masking" ;;
+        "crt"|"CRT") echo "CRT - Simulates old CRT monitor appearance" ;;
+        "curves"|"Curves") echo "Curves - S-curve contrast without clipping" ;;
+        "daltonize"|"Daltonize") echo "Daltonize - Color blindness correction filter" ;;
+        "defring"|"Defring") echo "Defring - Removes chromatic aberration/fringing" ;;
+        "dpx"|"DPX") echo "DPX - Film-style color grading effect" ;;
+        "fakehdr"|"FakeHDR") echo "Fake HDR - Simulates HDR with bloom effects" ;;
+        "filmgrain"|"FilmGrain") echo "Film Grain - Adds realistic film grain noise" ;;
+        "levels"|"Levels") echo "Levels - Adjusts black/white points range" ;;
+        "liftgammagain"|"LiftgGammaGain") echo "Lift Gamma Gain - Pro shadows/midtones/highlights tool" ;;
+        "lumasharpen"|"LumaSharpen") echo "Luma Sharpen - Luminance-based detail enhancement" ;;
+        "monochrome"|"Monochrome") echo "Monochrome - B&W conversion with film presets" ;;
+        "nostalgia"|"Nostalgia") echo "Nostalgia - Retro gaming visual style emulation" ;;
+        "sepia"|"Sepia") echo "Sepia - Vintage sepia tone effect" ;;
+        "smartsharp"|"SmartSharp") echo "Smart Sharp - Depth-aware intelligent sharpening" ;;
+        "technicolor"|"Technicolor") echo "Technicolor - Classic vibrant film process look" ;;
+        "tonemap"|"Tonemap") echo "Tonemap - Comprehensive tone mapping controls" ;;
+        "vibrance"|"Vibrance") echo "Vibrance - Smart saturation enhancement tool" ;;
+        "vignette"|"Vignette") echo "Vignette - Darkened edges camera lens effect" ;;
         *) echo "$1 - Available graphics effect" ;;
     esac
 }
