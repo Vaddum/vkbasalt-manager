@@ -1179,7 +1179,7 @@ configure_cas() {
     local cur=$(grep "^casSharpness" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local val=40; [ ! -z "$cur" ] && val=$(awk "BEGIN {printf \"%.0f\", $cur * 100}")
     local sharpness=$(zenity --scale --title="CAS - Contrast Adaptive Sharpening" \
-        --text="Adjust sharpening strength\nCurrent value: ${cur:-0.4}\n\n0 = No sharpening\n100 = Maximum sharpening" \
+        --text="Adjust sharpening strength\nCurrent value: ${cur:-0.5}\n\n0 = No sharpening\n100 = Maximum sharpening" \
         --min-value=0 --max-value=100 --value=$val --step=5)
     if [ ! -z "$sharpness" ]; then
         local v=$(awk "BEGIN {printf \"%.2f\", $sharpness / 100}")
@@ -1264,7 +1264,7 @@ configure_dls() {
 
         local dv=17; [ ! -z "$denoise" ] && dv=$(awk "BEGIN {printf \"%.0f\", $denoise * 100}")
         local d=$(zenity --scale --title="DLS - Denoise Strength" \
-            --text="Adjust noise reduction\nCurrent value: ${denoise:-0.17}\n\n0 = No denoising\n100 = Maximum denoising" \
+            --text="Adjust noise reduction\nCurrent value: ${denoise:-0.20}\n\n0 = No denoising\n100 = Maximum denoising" \
             --min-value=0 --max-value=100 --value=$dv --step=5)
 
         if [ ! -z "$d" ]; then
