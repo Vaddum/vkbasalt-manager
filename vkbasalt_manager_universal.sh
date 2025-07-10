@@ -48,7 +48,7 @@ if [ "$SYSTEM" = "steamdeck" ]; then
     DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
     mkdir -p "${USER_HOME}/Desktop"
 elif [ "$SYSTEM" = "cachyos" ]; then
-    # Pour CachyOS, créer le raccourci sur le bureau ET dans les applications
+    # For CachyOS, create shortcut on desktop AND in applications
     DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
     DESKTOP_FILE_APPS="${USER_HOME}/.local/share/applications/VkBasalt-Manager.desktop"
     mkdir -p "${USER_HOME}/Desktop" "${USER_HOME}/.local/share/applications"
@@ -156,12 +156,12 @@ move_script_to_final_location() {
         chmod +x "$SCRIPT_PATH"
         chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" 2>/dev/null || true
 
-        # Mettre à jour le chemin Exec dans le fichier .desktop principal
+        # Update the Exec path in the main .desktop file
         if [ -f "$DESKTOP_FILE" ]; then
             sed -i "s|Exec=.*|Exec=$SCRIPT_PATH|" "$DESKTOP_FILE"
         fi
 
-        # Pour CachyOS, mettre à jour aussi le fichier d'applications
+        # For CachyOS, also update the applications file
         if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ] && [ -f "$DESKTOP_FILE_APPS" ]; then
             sed -i "s|Exec=.*|Exec=$SCRIPT_PATH|" "$DESKTOP_FILE_APPS"
         fi
@@ -466,7 +466,7 @@ install_vkbasalt() {
         chmod +x "$SCRIPT_PATH" "$DESKTOP_FILE" 2>/dev/null || true
         chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE" 2>/dev/null || true
 
-        # Pour CachyOS, définir aussi les permissions pour le fichier d'applications
+        # For CachyOS, also set permissions for the applications file
         if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ] && [ -f "$DESKTOP_FILE_APPS" ]; then
             chmod +x "$DESKTOP_FILE_APPS" 2>/dev/null || true
             chown "${SYSTEM_USER}:${SYSTEM_USER}" "$DESKTOP_FILE_APPS" 2>/dev/null || true
@@ -548,7 +548,7 @@ create_icon_and_desktop() {
 </svg>
 EOF
 
-    # Créer le fichier .desktop principal
+    # Create the main .desktop file
     cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
@@ -565,7 +565,7 @@ Categories=Game;Settings;
 MimeType=
 EOF
 
-    # Pour CachyOS, créer aussi le raccourci dans les applications
+    # For CachyOS, also create shortcut in applications
     if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ]; then
         cat > "$DESKTOP_FILE_APPS" << EOF
 [Desktop Entry]
@@ -582,12 +582,12 @@ StartupWMClass=zenity
 Categories=Game;Settings;
 MimeType=
 EOF
-        # Rendre le fichier d'application exécutable
+        # Make the application file executable
         chmod +x "$DESKTOP_FILE_APPS" 2>/dev/null || true
         chown "${SYSTEM_USER}:${SYSTEM_USER}" "$DESKTOP_FILE_APPS" 2>/dev/null || true
     fi
 
-    # Rendre le fichier principal exécutable
+    # Make the main file executable
     chmod +x "$DESKTOP_FILE" 2>/dev/null || true
 }
 
@@ -598,7 +598,7 @@ uninstall_vkbasalt() {
             echo "10" ; echo "# Removing VkBasalt Manager..."
             rm -f "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE"
 
-            # Pour CachyOS, supprimer aussi le fichier d'applications
+            # For CachyOS, also remove the applications file
             if [ "$SYSTEM" = "cachyos" ] && [ -n "$DESKTOP_FILE_APPS" ]; then
                 rm -f "$DESKTOP_FILE_APPS"
             fi
@@ -609,22 +609,22 @@ uninstall_vkbasalt() {
 
             echo "50" ; echo "# Removing system packages..."
             if [ "$SYSTEM" = "cachyos" ]; then
-                # On CachyOS, utiliser le même gestionnaire de paquets que pour l'installation
+                # On CachyOS, use the same package manager as for installation
                 if [ "$PACKAGE_MANAGER" = "paru" ]; then
-                    # Vérifier si les paquets sont installés via paru/pacman
+                    # Check if packages are installed via paru/pacman
                     if paru -Qs vkbasalt &>/dev/null; then
                         echo "# Removing VkBasalt packages with paru..."
                         paru -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
                     fi
                 else
-                    # Fallback vers pacman si paru n'est pas disponible
+                    # Fallback to pacman if paru is not available
                     if pacman -Qs vkbasalt &>/dev/null; then
                         echo "# Removing VkBasalt packages with pacman..."
                         sudo pacman -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
                     fi
                 fi
             elif [ "$SYSTEM" = "arch" ] || [ "$SYSTEM" = "steamdeck" ]; then
-                # Pour Arch Linux et Steam Deck, utiliser pacman
+                # For Arch Linux and Steam Deck, use pacman
                 if pacman -Qs vkbasalt &>/dev/null; then
                     echo "# Removing VkBasalt packages with pacman..."
                     sudo pacman -Rns --noconfirm vkbasalt lib32-vkbasalt 2>/dev/null || true
@@ -658,10 +658,10 @@ uninstall_vkbasalt() {
 # Get shader description
 get_shader_description() {
     case "$1" in
-        "cas"|"CAS") echo "AMD Adaptive Sharpening - Enhances details without artifacts (Built-in)" ;;
-        "fxaa"|"FXAA") echo "Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
-        "smaa"|"SMAA") echo "High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
-        "dls"|"DLS") echo "Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
+        "cas"|"CAS") echo "⭐ AMD Adaptive Sharpening - Enhances details without artifacts (Built-in)" ;;
+        "fxaa"|"FXAA") echo "⭐ Fast Anti-Aliasing - Smooths jagged edges quickly (Built-in)" ;;
+        "smaa"|"SMAA") echo "⭐ High-quality Anti-Aliasing - Better than FXAA (Built-in)" ;;
+        "dls"|"DLS") echo "⭐ Denoised Luma Sharpening - Intelligent sharpening without noise (Built-in)" ;;
         *) echo "$1 - Available graphics effect" ;;
     esac
 }
