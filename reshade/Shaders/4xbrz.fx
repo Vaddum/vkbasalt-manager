@@ -70,7 +70,7 @@ uniform float coef <
 	ui_min = 1.0; ui_max = 10.0;
 	ui_label = "Strength";
 	ui_tooltip = "Strength of the effect (4 or 6)";
-> = 4.0;
+> = 2.0;
 
 
 #include "ReShade.fxh"
