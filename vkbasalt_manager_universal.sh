@@ -637,13 +637,6 @@ uninstall_vkbasalt() {
             echo "100" ; echo "# Uninstallation complete"
         ) | zenity --progress --title="Uninstallation" --text="Removing all components..." --percentage=0 --auto-close --width=420 --height=110
 
-        local launch_note=""
-        if [ "$SYSTEM" = "steamdeck" ]; then
-            launch_note="💡 Don't forget to remove ENABLE_VKBASALT=1 from your Steam games launch options."
-        else
-            launch_note="💡 Don't forget to remove ENABLE_VKBASALT=1 from your game launch commands or environment variables."
-        fi
-
         show_info "✅ Uninstallation finished!\n\n$launch_note"
         exit 0
     fi
