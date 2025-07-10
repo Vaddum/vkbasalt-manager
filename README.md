@@ -16,17 +16,14 @@ A comprehensive installation, configuration, and management tool for VkBasalt wi
 
 ### Main Configuration Menu
 ![Configuration Menu](image2.png)
-
 *Main interface showing all available configuration options*
 
 ### Shader Selection Interface
 ![Shader Selection](image3.png)
-
 *Interactive shader selection with descriptions and difficulty indicators*
 
 ### Advanced Settings
 ![Advanced Settings](image1.png)
-
 *Built-in effect configuration for professional fine-tuning*
 
 ## 🚀 Quick Start
