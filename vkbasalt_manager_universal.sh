@@ -855,7 +855,7 @@ EOF
 
         case "$shader_lower" in
             "cas")
-                echo "casSharpness = 0.4" >> "$CONFIG_FILE"
+                echo "casSharpness = 0.5" >> "$CONFIG_FILE"
                 ;;
             "fxaa")
                 echo "fxaaQualitySubpix = 0.75" >> "$CONFIG_FILE"
@@ -868,7 +868,7 @@ EOF
                 ;;
             "dls")
                 echo "dlsSharpening = 0.5" >> "$CONFIG_FILE"
-                echo "dlsDenoise = 0.17" >> "$CONFIG_FILE"
+                echo "dlsDenoise = 0.20" >> "$CONFIG_FILE"
                 ;;
             *)
                 local shader_path=""
