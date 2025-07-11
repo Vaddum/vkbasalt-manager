@@ -10,14 +10,17 @@ VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vu
 
 ### Main Configuration Menu
 ![Configuration Menu](image2.png)
+
 *The main interface showing configuration options including shader management, toggle key settings, and advanced controls.*
 
 ### Shader Selection Interface
 ![Shader Selection](image3.png)
+
 *Interactive shader selection with performance impact indicators and detailed descriptions for each effect.*
 
 ### Advanced Settings Panel
 ![Advanced Settings](image1.png)
+
 *Fine-tuning controls for built-in VkBasalt effects including CAS, FXAA, SMAA, and DLS with real-time parameter adjustment.*
 
 ## 🚀 Supported Systems
