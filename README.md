@@ -1,236 +1,304 @@
-# VkBasalt Manager - Universal Version
+# VkBasalt Manager - Universal Installation & Configuration Tool
 
-A comprehensive installation, configuration, and management tool for VkBasalt with graphical interface support. Compatible with Steam Deck (SteamOS), CachyOS, Arch Linux, and other Linux distributions.
+A comprehensive graphical interface for installing, configuring, and managing VkBasalt post-processing effects on Linux gaming systems. This tool provides an easy-to-use solution for enhancing your gaming visuals with minimal performance impact.
 
-## 🎯 Features
+## 🎯 Overview
 
-- **Universal Compatibility**: Works on Steam Deck, CachyOS, Arch Linux, and other distributions
-- **Automatic Installation**: Downloads and installs VkBasalt with all dependencies
-- **Graphical Interface**: Easy-to-use GUI with Zenity dialogs
-- **Shader Management**: Browse and enable/disable effects with visual feedback
-- **Advanced Configuration**: Fine-tune built-in VkBasalt effects (CAS, FXAA, SMAA, DLS)
-- **Desktop Integration**: Creates desktop shortcuts and application menu entries
-- **Package Manager Detection**: Automatically uses the best package manager (paru, pacman, etc.)
+VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vulkan post-processing layer that applies real-time visual effects to games. The manager includes automated installation, shader management, and advanced configuration options through an intuitive graphical interface.
 
 ## 🖼️ Screenshots
 
 ### Main Configuration Menu
 ![Configuration Menu](image2.png)
+*The main interface showing configuration options including shader management, toggle key settings, and advanced controls.*
 
 ### Shader Selection Interface
 ![Shader Selection](image3.png)
+*Interactive shader selection with performance impact indicators and detailed descriptions for each effect.*
 
-### Advanced Settings
+### Advanced Settings Panel
 ![Advanced Settings](image1.png)
+*Fine-tuning controls for built-in VkBasalt effects including CAS, FXAA, SMAA, and DLS with real-time parameter adjustment.*
 
-## 🚀 Quick Start
+## 🚀 Supported Systems
 
-### Installation
+### 🎮 Steam Deck (SteamOS)
+- **Script**: `vkbasalt_manager_steamos.sh`
+- **Features**: Steam Deck optimized installation from Chaotic AUR
+- **Automatic**: Dependency management, VkBasalt installation, shader setup
+- **Integration**: Desktop icon creation for easy access
 
-1. **Make the script executable:**
-   ```bash
-   chmod +x vkbasalt_manager_universal.sh
-   ```
+### 🏔️ CachyOS 
+- **Script**: `vkbasalt_manager_cachyos.sh`  
+- **Features**: Native Paru package manager support
+- **Sources**: Official repositories with AUR fallback
+- **Optimization**: CachyOS-specific performance tuning
 
-2. **Run the installer:**
-   ```bash
-   ./vkbasalt_manager_universal.sh
-   ```
+### 🔧 Universal Compatibility
+Both scripts automatically detect and adapt to:
+- Arch Linux and derivatives
+- Package manager availability (paru, pacman)
+- System-specific optimizations
+- User permissions and directory structures
 
-3. **Follow the installation wizard** - the script will automatically:
-   - Detect your system (Steam Deck, CachyOS, Arch, etc.)
-   - Install required dependencies
-   - Download and configure VkBasalt
-   - Install ReShade shaders
-   - Create desktop shortcuts
+## ⚡ Quick Start
 
-### Managing Effects
+### 1. Download and Prepare
+```bash
+# Download the appropriate script for your system
+wget https://github.com/Vaddum/vkbasalt-manager/raw/main/vkbasalt_manager_steamos.sh
+# OR
+wget https://github.com/Vaddum/vkbasalt-manager/raw/main/vkbasalt_manager_cachyos.sh
 
-1. **Launch VkBasalt Manager** from desktop or applications menu
-2. **Select "Shaders"** to manage active effects
-3. **Choose effects** using the checkbox interface:
-   - ⭐ **Built-in effects** (CAS, FXAA, SMAA, DLS) - Always available
-   - 🟢 **Low impact** - Minimal performance cost
-   - 🟠 **Medium impact** - Moderate performance cost  
-   - 🔴 **High impact** - Higher performance cost
-4. **Apply settings** and test in your games
+# Make executable
+chmod +x vkbasalt_manager_*.sh
+```
 
-### Toggle Effects In-Game
+### 2. Run Installation
+```bash
+# Steam Deck / SteamOS
+./vkbasalt_manager_steamos.sh
 
-- **Default key**: `Home` (configurable)
-- Press the toggle key to enable/disable effects while playing
-- Change toggle key via "Toggle Key" option in the manager
+# CachyOS
+./vkbasalt_manager_cachyos.sh
+```
+
+### 3. Follow the Wizard
+The graphical installer will:
+- ✅ Check system compatibility
+- 📦 Install dependencies automatically  
+- 🔧 Download and configure VkBasalt
+- 🎨 Install ReShade shader collection
+- 🖥️ Create desktop shortcuts
 
 ## 🎨 Available Effects
 
-### Built-in VkBasalt Effects
-| Effect | Description | Performance Impact |
-|--------|-------------|-------------------|
+### ⭐ Built-in VkBasalt Effects (Always Available)
+| Effect | Description | Performance |
+|--------|-------------|-------------|
 | **CAS** | AMD FidelityFX Contrast Adaptive Sharpening | Low |
 | **FXAA** | Fast Approximate Anti-Aliasing | Low |
 | **SMAA** | Subpixel Morphological Anti-Aliasing | Medium |
 | **DLS** | Denoised Luma Sharpening | Low |
 
-### ReShade Effects
+### 🌟 ReShade Effects Collection
 | Effect | Description | Performance Impact |
 |--------|-------------|-------------------|
-| Border | Customizable borders to fix screen edges | Low |
-| Cartoon | Cartoon-like edge enhancement | Medium |
-| Clarity | Advanced sharpening with blur masking | High |
-| CRT | Simulates old CRT monitor appearance | High |
-| Curves | S-curve contrast enhancement | Low |
-| Daltonize | Color blindness correction filter | Low |
-| DPX | Film-style color grading | Medium |
-| FakeHDR | HDR simulation with bloom effects | High |
-| FilmGrain | Realistic film grain noise | Medium |
-| Levels | Black/white point adjustments | Low |
-| LiftGammaGain | Professional color grading tool | Low |
-| LumaSharpen | Luminance-based sharpening | Medium |
-| Monochrome | Black & white conversion | Low |
-| Nostalgia | Retro gaming visual style | Medium |
-| Sepia | Vintage sepia tone effect | Low |
-| SmartSharp | Depth-aware intelligent sharpening | High |
-| Technicolor | Classic vibrant film look | Low |
-| Tonemap | Advanced tone mapping controls | Low |
-| Vibrance | Smart saturation enhancement | Low |
-| Vignette | Camera lens edge darkening | Medium |
+| **4xBRZ** | Advanced pixel art upscaling for retro games | 🔴 High |
+| **AdaptiveSharpen** | Smart edge-aware sharpening | 🟠 Medium |
+| **Border** | Customizable screen borders | 🟢 Low |
+| **Cartoon** | Cartoon-style edge enhancement | 🟠 Medium |
+| **Clarity** | Advanced sharpening with blur masking | 🔴 High |
+| **CRT** | Classic CRT monitor simulation | 🔴 High |
+| **Curves** | S-curve contrast enhancement | 🟢 Low |
+| **Daltonize** | Color blindness correction | 🟢 Low |
+| **DPX** | Professional film-style color grading | 🟠 Medium |
+| **FakeHDR** | HDR simulation with bloom effects | 🔴 High |
+| **FilmGrain** | Realistic film grain texture | 🟠 Medium |
+| **Levels** | Black/white point adjustments | 🟢 Low |
+| **LiftGammaGain** | Professional color grading tool | 🟢 Low |
+| **LumaSharpen** | Luminance-based detail enhancement | 🟠 Medium |
+| **Monochrome** | Black & white with film presets | 🟢 Low |
+| **Nostalgia** | Retro gaming visual styles | 🟠 Medium |
+| **Sepia** | Vintage sepia tone effect | 🟢 Low |
+| **SmartSharp** | Depth-aware intelligent sharpening | 🔴 High |
+| **Technicolor** | Classic vibrant film look | 🟢 Low |
+| **Tonemap** | Advanced tone mapping controls | 🟢 Low |
+| **Vibrance** | Smart saturation enhancement | 🟢 Low |
+| **Vignette** | Camera lens edge darkening | 🟠 Medium |
 
 ## ⚙️ Advanced Configuration
 
-### Built-in Effect Settings
-
-The manager provides detailed configuration for built-in effects:
+### Built-in Effect Tuning
 
 #### CAS (Contrast Adaptive Sharpening)
 - **Sharpness**: 0.0 to 1.0 (default: 0.5)
-- Enhances details without introducing artifacts
+- Enhances image details without introducing artifacts
+- AMD FidelityFX technology for optimal quality
 
-#### FXAA (Fast Approximate Anti-Aliasing)
+#### FXAA (Fast Approximate Anti-Aliasing)  
 - **Subpixel Quality**: 0.0 to 1.0 (default: 0.75)
 - **Edge Threshold**: 0.063 to 0.333 (default: 0.125)
+- Balances performance and anti-aliasing quality
 
 #### SMAA (Subpixel Morphological Anti-Aliasing)
 - **Edge Detection**: luma, color, or depth (default: luma)
-- **Threshold**: 0.01 to 0.20 (default: 0.05)
+- **Threshold**: 0.01 to 0.20 (default: 0.05)  
 - **Max Search Steps**: 8 to 64 (default: 32)
+- Superior quality compared to FXAA
 
 #### DLS (Denoised Luma Sharpening)
 - **Sharpening**: 0.0 to 1.0 (default: 0.5)
 - **Denoise**: 0.0 to 1.0 (default: 0.20)
+- Intelligent sharpening with noise reduction
 
-### Manual Configuration
+### Toggle Key Configuration
+Customize the in-game toggle key from a comprehensive list:
+- **Default**: Home key
+- **Function Keys**: F1-F12
+- **Navigation**: Page Up/Down, Insert, Delete
+- **System**: Print Screen, Scroll Lock, Pause
+- **Modifiers**: Caps Lock, Num Lock, Tab
 
-Configuration file location: `~/.config/vkBasalt/vkBasalt.conf`
+## 📁 File Structure
 
-Example configuration:
-```ini
-effects = cas:fxaa:smaa
-reshadeTexturePath = ~/.config/reshade/Textures
-reshadeIncludePath = ~/.config/reshade/Shaders
-depthCapture = off
-toggleKey = Home
-enableOnLaunch = True
+```
+~/.config/vkBasalt/
+├── vkBasalt.conf              # Main configuration file
+├── vkbasalt-manager.sh        # Manager script
+└── vkbasalt-manager.svg       # Application icon
 
-casSharpness = 0.5
-fxaaQualitySubpix = 0.75
-fxaaQualityEdgeThreshold = 0.125
-smaaEdgeDetection = luma
-smaaThreshold = 0.05
-smaaMaxSearchSteps = 32
+~/.config/reshade/
+├── Shaders/                   # ReShade effect files (.fx)
+└── Textures/                  # Texture resources
+
+~/.local/lib/
+├── libvkbasalt.so             # VkBasalt library (64-bit)
+└── lib32/libvkbasalt.so       # VkBasalt library (32-bit)
+
+~/.local/share/vulkan/implicit_layer.d/
+├── vkBasalt.json              # Vulkan layer config (64-bit)
+└── vkBasalt.x86.json          # Vulkan layer config (32-bit)
 ```
 
-## 🖥️ System Compatibility
+## 🎮 Usage in Games
 
-### Supported Systems
-- **Steam Deck** (SteamOS) - Full support with system-specific optimizations
-- **CachyOS** - Native repository and AUR package support
-- **Arch Linux** - AUR package installation
-- **Other Linux** - Generic installation with automatic detection
+### Enabling VkBasalt
+1. **Environment Variable Method** (Recommended):
+   ```bash
+   ENABLE_VKBASALT=1 %command%
+   ```
 
-### Supported Package Managers
-- **paru** (CachyOS preferred)
-- **pacman** (Arch/SteamOS)
-- **apt** (Debian/Ubuntu)
-- **dnf** (Fedora)
-- **zypper** (openSUSE)
+2. **Steam Launch Options**:
+   ```
+   ENABLE_VKBASALT=1 %command%
+   ```
 
-### Dependencies
-Automatically installed:
-- `zenity` - GUI dialogs
-- `wget` - Downloads
-- `unzip` - Archive extraction
-- `tar` - Package extraction
+3. **Steam Deck Specific**:
+   ```bash
+   SteamDeck=1 %command%
+   ```
 
-## 📁 File Locations
+### In-Game Controls
+- **Toggle Effects**: Press the configured toggle key (default: Home)
+- **Real-time**: Effects can be enabled/disabled during gameplay
+- **No Restart**: Changes apply immediately without restarting the game
 
-| Component | Location |
-|-----------|----------|
-| VkBasalt Libraries | `~/.local/lib/libvkbasalt.so`<br>`~/.local/lib32/libvkbasalt.so` |
-| Configuration | `~/.config/vkBasalt/vkBasalt.conf` |
-| Shaders | `~/.config/reshade/Shaders/` |
-| Textures | `~/.config/reshade/Textures/` |
-| Vulkan Layers | `~/.local/share/vulkan/implicit_layer.d/` |
-| Manager Script | `~/.config/vkBasalt/vkbasalt-manager.sh` |
-| Desktop Icon | `~/Desktop/VkBasalt-Manager.desktop` |
+## 🔧 Management Features
 
-## 🔧 Troubleshooting
+### Main Interface Options
+- **Shaders**: Enable/disable effects with visual feedback
+- **Toggle Key**: Customize the in-game activation key
+- **Advanced**: Fine-tune built-in effect parameters
+- **View**: Inspect current configuration settings
+- **Reset**: Restore default configurations
+- **Status**: Check installation and component status
+- **Uninstall**: Complete removal of all components
+
+### Automatic Features
+- **Dependency Detection**: Automatically installs required packages
+- **Shader Organization**: Categorizes effects by performance impact
+- **Configuration Validation**: Ensures proper syntax and compatibility
+- **Desktop Integration**: Creates application menu entries and shortcuts
+
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
 **VkBasalt not working in games:**
-1. Verify installation status via "Status" in the manager
-2. Check that the correct environment variable is used
-3. Ensure the game uses Vulkan API (not OpenGL/DirectX)
+1. Verify the game uses Vulkan API (not OpenGL/DirectX)
+2. Check environment variable: `ENABLE_VKBASALT=1`
+3. Use "Status" option in manager to verify installation
+4. Ensure the toggle key is pressed to activate effects
 
 **Effects not visible:**
 1. Press the toggle key (default: Home) in-game
-2. Check that effects are enabled in the shader manager
-3. Verify configuration file syntax
+2. Verify effects are enabled in shader selection
+3. Check configuration file syntax in "View" option
+4. Try resetting to default configuration
 
 **Performance issues:**
 1. Disable high-impact effects (marked with 🔴)
-2. Reduce effect intensity in advanced settings
-3. Use only built-in effects for maximum performance
+2. Use only built-in effects for maximum performance
+3. Reduce effect intensity in advanced settings
+4. Monitor frame rate and adjust accordingly
 
-**Installation fails:**
-1. Check internet connection
-2. Ensure sufficient disk space
-3. Verify user permissions
-4. Try running with elevated privileges if needed
+**Installation problems:**
+1. Check internet connection for downloads
+2. Verify user permissions in home directory
+3. Ensure sufficient disk space (minimum 100MB)
+4. Check package manager configuration
 
-### Getting Help
-
-1. **Check Status**: Use the "Status" option in the manager
-2. **View Configuration**: Use "View" to check current settings
-3. **Reset to Defaults**: Use "Reset" to restore working configuration
-4. **Complete Reinstall**: Use "Uninstall" then reinstall
+### Getting Support
+1. **Status Check**: Use the "Status" option for system information
+2. **Configuration Review**: Use "View" to check current settings  
+3. **Reset Configuration**: Use "Reset" to restore working defaults
+4. **Clean Reinstall**: Use "Uninstall" then reinstall if needed
 
 ## 🗑️ Uninstallation
 
-The manager provides complete uninstallation:
-
+### Complete Removal
+The manager provides thorough uninstallation:
 1. Launch VkBasalt Manager
-2. Select "Uninstall"
-3. Confirm removal (⚠️ This removes EVERYTHING)
+2. Select "Uninstall" option
+3. Confirm removal (⚠️ This removes everything)
+4. All files, configurations, and dependencies are removed
 
-Manual removal:
+### Manual Removal (if needed)
 ```bash
+# Remove all VkBasalt components
 rm -rf ~/.config/vkBasalt ~/.config/reshade
 rm -f ~/.local/lib/libvkbasalt.so ~/.local/lib32/libvkbasalt.so
 rm -f ~/.local/share/vulkan/implicit_layer.d/vkBasalt*.json
+rm -f ~/Desktop/VkBasalt-Manager.desktop
 ```
 
-## 📝 License
+## 📋 System Requirements
 
-This project is open source. Please check the license file for details.
+### Minimum Requirements
+- **OS**: Linux (Arch-based distributions)
+- **Graphics**: Vulkan-compatible GPU and drivers
+- **Memory**: 2GB available RAM
+- **Storage**: 100MB free space
+- **Network**: Internet connection for initial setup
+
+### Recommended
+- **GPU**: Dedicated graphics card with recent Vulkan drivers
+- **Memory**: 4GB+ RAM for shader compilation
+- **Storage**: 500MB+ for expanded shader collections
+- **CPU**: Multi-core processor for real-time processing
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
+Contributions are welcome! Areas for improvement:
+- Additional Linux distribution support
+- New shader effects and presets
+- Performance optimizations
+- User interface enhancements
+- Documentation improvements
 
-## ⭐ Acknowledgments
+## 📄 License
 
-- **VkBasalt** project for the core post-processing layer
-- **ReShade** community for shader effects
-- **Chaotic AUR** for package distribution
-- **AMD FidelityFX** for CAS implementation
+This project respects all component licenses:
+- **VkBasalt**: Individual project license
+- **ReShade Shaders**: Various open-source licenses
+- **Manager Scripts**: Open source with attribution requirements
+
+## 🙏 Acknowledgments
+
+- **VkBasalt Project**: Core post-processing layer
+- **ReShade Community**: Extensive shader effect library  
+- **Chaotic AUR**: Package distribution for Arch Linux
+- **AMD FidelityFX**: CAS (Contrast Adaptive Sharpening) technology
+- **Linux Gaming Community**: Testing and feedback
+
+## 🔗 Useful Links
+
+- [VkBasalt Official Repository](https://github.com/DadSchoorse/vkBasalt)
+- [ReShade Shader Database](https://reshade.me/)
+- [Vulkan API Documentation](https://www.vulkan.org/)
+- [ProtonDB (Steam Play Compatibility)](https://www.protondb.com/)
+
+---
+
+**Note**: VkBasalt only works with games that use the Vulkan graphics API. OpenGL and DirectX games are not supported. Check your game's graphics settings or compatibility lists before installation.
