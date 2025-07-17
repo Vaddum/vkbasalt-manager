@@ -1611,19 +1611,19 @@ configure_lossless_scaling_for_game() {
         --column="Description" \
         --width=600 \
         --height=320 \
-        "Enable (Auto)" "✅ Enable with recommended settings (2x, 0.5 flow)" \
-        "Custom (Auto)" "⚙️ Configure custom settings and auto-apply" \
-        "Disable (Auto)" "🚫 Remove all Lossless Scaling options" \
+        "Recommanded" "✅ Enable with recommended settings (2x, 0.5 flow)" \
+        "Custom" "⚙️ Configure custom settings and auto-apply" \
+        "Disable" "🚫 Remove ALL Lossless Scaling options" \
         2>/dev/null)
 
     case "$choice" in
-        "Enable (Auto)")
+        "Recommanded")
             enable_lossless_scaling_auto "$app_id" "$game_name"
             ;;
-        "Custom (Auto)")
+        "Custom")
             configure_lossless_scaling_advanced_auto "$app_id" "$game_name"
             ;;
-        "Disable (Auto)")
+        "Disable")
             disable_lossless_scaling_auto "$app_id" "$game_name"
             ;;
     esac
