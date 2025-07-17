@@ -1085,7 +1085,7 @@ check_python3() {
     return 0
 }
 
-# Function to backup and modify Steam's localconfig.vdf - SIMPLIFIED (no Steam check)
+# Function to backup and modify Steam's localconfig.vdf
 modify_steam_launch_options() {
     local app_id="$1"
     local launch_options="$2"
@@ -1127,7 +1127,6 @@ modify_steam_launch_options() {
     # NOTE: Steam closure is now handled by handle_steam_closure() before calling this function
     echo "Proceeding with configuration modification (Steam closure handled externally)"
 
-    # [Le reste du code Python reste identique - pas de changement dans la partie Python]
     # Use a simpler, more reliable Python script
     python3 << EOF
 import sys
@@ -1849,10 +1848,10 @@ configure_lossless_scaling_advanced_auto() {
 
     echo "Selected multiplier: $multiplier"
 
-    # Get flow scale with higher precision (2 decimals)
+    # Get flow scale with higher precision
     local flow_scale_percent=$(zenity --scale \
-        --title="LSFG Flow Scale (Precision Mode)" \
-        --text="Adjust flow scale for motion smoothness\n(0.10 = very smooth, 1.00 = very responsive)\n\nPrecision: 2 decimal places" \
+        --title="LSFG Flow Scale" \
+        --text="Adjust flow scale for motion smoothness\n(0.10 = very smooth, 1.00 = very responsive)" \
         --min-value=10 \
         --max-value=100 \
         --value=50 \
@@ -2008,7 +2007,7 @@ LSFG_MULTIPLIER=X
    • 2 = recommended for most games
 
 LSFG_FLOW_SCALE=X.XX
-   • Motion smoothness (0.10 to 1.00) - 2 decimal precision
+   • Motion smoothness (0.10 to 1.00)
    • 0.50 = balanced
    • Lower values = smoother motion
    • Higher values = more responsive
@@ -2031,8 +2030,7 @@ ENABLE_LSFG=1 LSFG_MULTIPLIER=2 LSFG_FLOW_SCALE=0.80 LSFG_PERF_MODE=1 %COMMAND%
 ⚠️  NOTES:
 - Lossless Scaling must be installed separately
 - Not all games are compatible
-- Test settings per game for best results
-- Use 2 decimal precision for optimal tuning" \
+- Test settings per game for best results" \
         2>/dev/null
 }
 
