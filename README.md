@@ -274,7 +274,3 @@ This project respects all component licenses:
 - [ReShade Shader Database](https://reshade.me/)
 - [Vulkan API Documentation](https://www.vulkan.org/)
 - [ProtonDB (Steam Play Compatibility)](https://www.protondb.com/)
-
----
-
-**Note**: VkBasalt only works with games that use the Vulkan graphics API. OpenGL and DirectX games are not supported. Check your game's graphics settings or compatibility lists before installation.
