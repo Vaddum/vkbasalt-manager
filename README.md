@@ -1,4 +1,4 @@
-# VkBasalt Manager - Universal Installation & Configuration Tool
+# VkBasalt Manager - Installation & Configuration Tool
 
 A comprehensive graphical interface for installing, configuring, and managing VkBasalt post-processing effects on Linux gaming systems. This tool provides an easy-to-use solution for enhancing your gaming visuals with minimal performance impact.
 
