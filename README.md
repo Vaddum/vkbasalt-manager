@@ -163,25 +163,6 @@ Customize the in-game toggle key from a comprehensive list:
 ├── vkBasalt.json              # Vulkan layer config (64-bit)
 └── vkBasalt.x86.json          # Vulkan layer config (32-bit)
 ```
-
-## 🎮 Usage in Games
-
-### Enabling VkBasalt
-1. **Environment Variable Method** (Recommended):
-   ```bash
-   ENABLE_VKBASALT=1 %command%
-   ```
-
-2. **Steam Launch Options**:
-   ```
-   ENABLE_VKBASALT=1 %command%
-   ```
-
-3. **Steam Deck Specific**:
-   ```bash
-   SteamDeck=1 %command%
-   ```
-
 ### In-Game Controls
 - **Toggle Effects**: Press the configured toggle key (default: Home)
 - **Real-time**: Effects can be enabled/disabled during gameplay
@@ -210,9 +191,8 @@ Customize the in-game toggle key from a comprehensive list:
 
 **VkBasalt not working in games:**
 1. Verify the game uses Vulkan API (not OpenGL/DirectX)
-2. Check environment variable: `ENABLE_VKBASALT=1`
-3. Use "Status" option in manager to verify installation
-4. Ensure the toggle key is pressed to activate effects
+2. Use "Status" option in manager to verify installation
+3. Ensure the toggle key is pressed to activate effects
 
 **Effects not visible:**
 1. Press the toggle key (default: Home) in-game
