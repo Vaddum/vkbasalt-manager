@@ -1614,7 +1614,6 @@ configure_lossless_scaling_for_game() {
         "Enable (Auto)" "✅ Enable with recommended settings (2x, 0.5 flow)" \
         "Custom (Auto)" "⚙️ Configure custom settings and auto-apply" \
         "Disable (Auto)" "🚫 Remove all Lossless Scaling options" \
-        "Manual Guide" "📖 Show manual setup instructions" \
         2>/dev/null)
 
     case "$choice" in
@@ -1626,9 +1625,6 @@ configure_lossless_scaling_for_game() {
             ;;
         "Disable (Auto)")
             disable_lossless_scaling_auto "$app_id" "$game_name"
-            ;;
-        "Manual Guide")
-            show_manual_lossless_scaling_instructions
             ;;
     esac
 }
