@@ -1708,10 +1708,10 @@ configure_lossless_scaling_advanced_auto() {
 
     echo "Selected multiplier: $multiplier"
 
-    # Get flow scale with higher precision (2 decimals)
+    # Get flow scale with higher precision
     local flow_scale_percent=$(zenity --scale \
-        --title="LSFG Flow Scale (Precision Mode)" \
-        --text="Adjust flow scale for motion smoothness\n(0.10 = very smooth, 1.00 = very responsive)\n\nPrecision: 2 decimal places" \
+        --title="LSFG Flow Scale" \
+        --text="Adjust flow scale for motion smoothness\n(0.10 = very smooth, 1.00 = very responsive)" \
         --min-value=10 \
         --max-value=100 \
         --value=50 \
@@ -1764,10 +1764,10 @@ configure_lossless_scaling_advanced_auto() {
         # Verify the changes
         local verification=$(verify_launch_options "$app_id")
 
-        show_info "✅ Custom Lossless Scaling Applied Successfully!\n\nGame: $game_name\n\n🎯 Settings Applied:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale (2 decimal precision)\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")\n\n🚀 You can now restart Steam and launch your game!\n\n💡 Launch Options:\n$lsfg_command\n\n🔍 Verification:\n$verification"
+        show_info "✅ Custom Lossless Scaling Applied Successfully!\n\nGame: $game_name\n\n🎯 Settings Applied:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")\n\n🚀 You can now restart Steam and launch your game!\n\n💡 Launch Options:\n$lsfg_command\n\n🔍 Verification:\n$verification"
     else
         show_error "❌ Failed to automatically configure Steam\n\nTrying manual fallback..."
-        show_info "🎮 Add this to Launch Options manually:\n\n$lsfg_command\n\nSettings:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale (2 decimal precision)\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")"
+        show_info "🎮 Add this to Launch Options manually:\n\n$lsfg_command\n\nSettings:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")"
 
         # Try to copy to clipboard
         if command -v wl-copy &> /dev/null; then
@@ -1900,10 +1900,10 @@ configure_lossless_scaling_advanced_auto() {
         # Verify the changes
         local verification=$(verify_launch_options "$app_id")
 
-        show_info "✅ Custom Lossless Scaling Applied Successfully!\n\nGame: $game_name\n\n🎯 Settings Applied:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale (2 decimal precision)\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")\n\n🔄 Please restart Steam for changes to take effect.\n\n💡 Launch Options:\n$lsfg_command\n\n🔍 Verification:\n$verification"
+        show_info "✅ Custom Lossless Scaling Applied Successfully!\n\nGame: $game_name\n\n🎯 Settings Applied:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")\n\n🔄 Please restart Steam for changes to take effect.\n\n💡 Launch Options:\n$lsfg_command\n\n🔍 Verification:\n$verification"
     else
         show_error "❌ Failed to automatically configure Steam\n\nTrying manual fallback..."
-        show_info "🎮 Add this to Launch Options manually:\n\n$lsfg_command\n\nSettings:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale (2 decimal precision)\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")"
+        show_info "🎮 Add this to Launch Options manually:\n\n$lsfg_command\n\nSettings:\n• Multiplier: ${multiplier}x\n• Flow Scale: $flow_scale\n• Performance Mode: $([ "$perf_mode" = "1" ] && echo "Enabled" || echo "Disabled")"
 
         # Try to copy to clipboard
         if command -v wl-copy &> /dev/null; then
