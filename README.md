@@ -37,13 +37,6 @@ VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vu
 - **Sources**: Official repositories with AUR fallback
 - **Optimization**: CachyOS-specific performance tuning
 
-### 🔧 Universal Compatibility
-Both scripts automatically detect and adapt to:
-- Arch Linux and derivatives
-- Package manager availability (paru, pacman)
-- System-specific optimizations
-- User permissions and directory structures
-
 ## ⚡ Quick Start
 
 ### 1. Download and Prepare
