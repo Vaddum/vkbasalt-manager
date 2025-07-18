@@ -4,10 +4,10 @@ A comprehensive graphical interface for installing, configuring, and managing Vk
 
 ## 🎯 Overview
 
-VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vulkan post-processing layer that applies real-time visual effects to games. The manager includes automated installation, shader management, and advanced configuration options through an intuitive graphical interface.
+VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vulkan post-processing layer that applies real-time visual effects to games. The manager includes automated installation, shader management, advanced configuration options, and **Lossless Scaling Frame Generation** setup through an intuitive graphical interface.
 
 ## Main Configuration Menu
-*The main interface showing configuration options including shader management, toggle key settings, and advanced controls.*
+*The main interface showing configuration options including shader management, toggle key settings, Lossless Scaling configuration, and advanced controls.*
 ![Configuration Menu](image2.png)
 
 ## Shader Selection Interface
@@ -25,6 +25,7 @@ VkBasalt Manager simplifies the installation and configuration of VkBasalt, a Vu
 - **Features**: Steam Deck optimized installation from Chaotic AUR
 - **Automatic**: Dependency management, VkBasalt installation, shader setup
 - **Integration**: Desktop icon creation for easy access
+- **Steam Integration**: Automatic Steam launch options configuration
 
 ### 🏔️ CachyOS 
 - **Script**: `vkbasalt_manager_cachyos.sh`  
@@ -61,6 +62,7 @@ The graphical installer will:
 - 🔧 Download and configure VkBasalt
 - 🎨 Install ReShade shader collection
 - 🖥️ Create desktop shortcuts
+- 🎮 Configure Steam integration
 
 ## 🎨 Available Effects
 
@@ -97,6 +99,122 @@ The graphical installer will:
 | **Tonemap** | Advanced tone mapping controls | 🟢 Low |
 | **Vibrance** | Smart saturation enhancement | 🟢 Low |
 | **Vignette** | Camera lens edge darkening | 🟠 Medium |
+
+## 🚀 Lossless Scaling Frame Generation
+
+### What is Lossless Scaling Frame Generation (LSFG)?
+Lossless Scaling Frame Generation is an advanced technology that interpolates additional frames between existing frames to increase perceived framerate and smoothness. This feature is particularly beneficial for games with lower framerates or when you want to achieve ultra-smooth gameplay.
+
+### ⚙️ Features
+- **Automatic Steam Integration**: Automatically applies launch options to selected games
+- **Intelligent Game Detection**: Scans your Steam library for compatible games
+- **Precision Configuration**: 2-decimal precision for flow scale adjustments
+- **Multiple Scaling Modes**: Support for 1x, 2x, 3x, and 4x scaling multipliers
+- **Performance Optimization**: Built-in performance mode for better framerates
+- **Backup & Restore**: Automatic backup of Steam configurations
+
+### 📋 Configuration Options
+
+#### Basic Settings
+- **Enable/Disable**: Simple toggle for LSFG functionality
+- **Auto-Apply**: Automatically applies settings to Steam launch options
+- **Game Selection**: Choose specific games from your Steam library
+
+#### Advanced Parameters
+| Parameter | Description | Range | Default |
+|-----------|-------------|--------|---------|
+| **LSFG_MULTIPLIER** | Frame scaling multiplier | 1-4 | 2 |
+| **LSFG_FLOW_SCALE** | Motion smoothness control | 0.10-1.00 | 0.50 |
+| **LSFG_PERF_MODE** | Performance optimization | 0-1 | 1 |
+
+### 🎮 Usage Guide
+
+#### Quick Setup (Recommended)
+1. Launch VkBasalt Manager
+2. Select "Lossless Scaling"
+3. Choose your game from the Steam library
+4. Select "Enable" for automatic configuration
+5. Restart Steam for changes to take effect
+
+#### Custom Configuration
+1. Select "Custom" instead of "Enable"
+2. Choose your preferred multiplier (2x recommended)
+3. Adjust flow scale for motion smoothness
+4. Toggle performance mode as needed
+5. Settings are automatically applied to Steam
+
+#### Manual Configuration
+If automatic configuration fails, you can manually add these launch options in Steam:
+
+**Basic Setup:**
+```
+ENABLE_LSFG=1 LSFG_MULTIPLIER=2 LSFG_FLOW_SCALE=0.50 LSFG_PERF_MODE=1 %COMMAND%
+```
+
+**Ultra Smooth (for high motion games):**
+```
+ENABLE_LSFG=1 LSFG_MULTIPLIER=2 LSFG_FLOW_SCALE=0.25 LSFG_PERF_MODE=1 %COMMAND%
+```
+
+**Responsive (for competitive games):**
+```
+ENABLE_LSFG=1 LSFG_MULTIPLIER=2 LSFG_FLOW_SCALE=0.80 LSFG_PERF_MODE=1 %COMMAND%
+```
+
+### 🔧 Steam Integration Features
+
+#### Automatic Configuration
+- **Game Detection**: Automatically scans Steam library and installed games
+- **Launch Options Management**: Modifies Steam's localconfig.vdf safely
+- **Backup System**: Creates automatic backups before making changes
+- **Verification**: Confirms changes were applied correctly
+
+#### Smart Configuration Management
+- **Conflict Resolution**: Safely removes existing LSFG options before adding new ones
+- **Preservation**: Keeps other launch options intact
+- **Error Recovery**: Automatic rollback on configuration failures
+
+#### Steam Deck Optimization
+- **Multiple Steam Locations**: Supports native Steam, Flatpak, and various Steam Deck configurations
+- **Permission Handling**: Automatically manages file permissions
+- **User Detection**: Intelligent Steam user ID detection
+- **Configuration Diagnosis**: Advanced troubleshooting for Steam configuration issues
+
+### ⚠️ Important Notes
+
+- **Prerequisites**: Lossless Scaling software must be installed separately
+- **Compatibility**: Not all games support frame generation
+- **Performance Impact**: Higher multipliers may affect performance
+- **Steam Restart**: Always restart Steam after configuration changes
+- **Testing Recommended**: Test settings per game for optimal results
+
+### 🛠️ Troubleshooting Lossless Scaling
+
+#### Common Issues
+
+**Steam configuration not accessible:**
+1. Close Steam completely
+2. Run the manager as the 'deck' user
+3. Ensure Steam has been launched at least once
+4. Check file permissions in ~/.steam/
+
+**Automatic configuration fails:**
+1. Use the manual configuration method
+2. Check if Steam is running (close if needed)
+3. Verify Python3 is installed
+4. Try the "View" option to check current settings
+
+**Frame generation not working:**
+1. Ensure Lossless Scaling is properly installed
+2. Verify the game uses compatible graphics APIs
+3. Check if the game is launched through Steam
+4. Test with different LSFG_MULTIPLIER values
+
+**Performance issues:**
+1. Reduce LSFG_MULTIPLIER to 2 or 1
+2. Increase LSFG_FLOW_SCALE for more responsive feel
+3. Ensure LSFG_PERF_MODE is set to 1
+4. Monitor system resources during gameplay
 
 ## ⚙️ Advanced Configuration
 
@@ -150,7 +268,12 @@ Customize the in-game toggle key from a comprehensive list:
 ~/.local/share/vulkan/implicit_layer.d/
 ├── vkBasalt.json              # Vulkan layer config (64-bit)
 └── vkBasalt.x86.json          # Vulkan layer config (32-bit)
+
+# Steam Configuration Files (automatically managed)
+~/.steam/steam/userdata/[USER_ID]/config/
+└── localconfig.vdf            # Steam launch options (auto-backup created)
 ```
+
 ### In-Game Controls
 - **Toggle Effects**: Press the configured toggle key (default: Home)
 - **Real-time**: Effects can be enabled/disabled during gameplay
@@ -162,6 +285,7 @@ Customize the in-game toggle key from a comprehensive list:
 - **Shaders**: Enable/disable effects with visual feedback
 - **Toggle Key**: Customize the in-game activation key
 - **Advanced**: Fine-tune built-in effect parameters
+- **Lossless Scaling**: Configure frame generation for Steam games
 - **View**: Inspect current configuration settings
 - **Reset**: Restore default configurations
 - **Status**: Check installation and component status
@@ -172,6 +296,8 @@ Customize the in-game toggle key from a comprehensive list:
 - **Shader Organization**: Categorizes effects by performance impact
 - **Configuration Validation**: Ensures proper syntax and compatibility
 - **Desktop Integration**: Creates application menu entries and shortcuts
+- **Steam Integration**: Automatic Steam launch options management
+- **Backup System**: Automatic configuration backups before changes
 
 ## 🛠️ Troubleshooting
 
@@ -200,11 +326,24 @@ Customize the in-game toggle key from a comprehensive list:
 3. Ensure sufficient disk space (minimum 100MB)
 4. Check package manager configuration
 
+**Steam configuration issues:**
+1. Ensure Steam is completely closed before configuration
+2. Verify you're running as the correct user ('deck' on Steam Deck)
+3. Check that Steam has been launched at least once
+4. Use the diagnostic features in the manager
+
+**Lossless Scaling not working:**
+1. Verify Lossless Scaling is installed separately
+2. Check that Steam launch options were applied correctly
+3. Ensure the game is launched through Steam
+4. Try different LSFG parameters for your specific game
+
 ### Getting Support
 1. **Status Check**: Use the "Status" option for system information
 2. **Configuration Review**: Use "View" to check current settings  
 3. **Reset Configuration**: Use "Reset" to restore working defaults
-4. **Clean Reinstall**: Use "Uninstall" then reinstall if needed
+4. **Steam Diagnosis**: Use the automatic Steam diagnostic features
+5. **Clean Reinstall**: Use "Uninstall" then reinstall if needed
 
 ## 🗑️ Uninstallation
 
@@ -214,6 +353,7 @@ The manager provides thorough uninstallation:
 2. Select "Uninstall" option
 3. Confirm removal (⚠️ This removes everything)
 4. All files, configurations, and dependencies are removed
+5. Steam launch options are automatically cleaned up
 
 ### Manual Removal (if needed)
 ```bash
@@ -222,6 +362,9 @@ rm -rf ~/.config/vkBasalt ~/.config/reshade
 rm -f ~/.local/lib/libvkbasalt.so ~/.local/lib32/libvkbasalt.so
 rm -f ~/.local/share/vulkan/implicit_layer.d/vkBasalt*.json
 rm -f ~/Desktop/VkBasalt-Manager.desktop
+
+# Remove Steam configuration backups (optional)
+rm -f ~/.steam/steam/userdata/*/config/localconfig.vdf.backup.*
 ```
 
 ## 📋 System Requirements
@@ -232,12 +375,19 @@ rm -f ~/Desktop/VkBasalt-Manager.desktop
 - **Memory**: 2GB available RAM
 - **Storage**: 100MB free space
 - **Network**: Internet connection for initial setup
+- **Python**: Python3 for automatic Steam configuration
 
 ### Recommended
 - **GPU**: Dedicated graphics card with recent Vulkan drivers
 - **Memory**: 4GB+ RAM for shader compilation
 - **Storage**: 500MB+ for expanded shader collections
 - **CPU**: Multi-core processor for real-time processing
+- **Steam**: Steam client for Lossless Scaling integration
+
+### For Lossless Scaling
+- **Software**: Lossless Scaling application (purchased separately)
+- **Steam**: Steam client with valid library
+- **Performance**: Sufficient GPU/CPU for frame generation overhead
 
 ## 🤝 Contributing
 
@@ -247,6 +397,8 @@ Contributions are welcome! Areas for improvement:
 - Performance optimizations
 - User interface enhancements
 - Documentation improvements
+- Steam integration enhancements
+- Lossless Scaling compatibility improvements
 
 ## 📄 License
 
@@ -254,6 +406,7 @@ This project respects all component licenses:
 - **VkBasalt**: Individual project license
 - **ReShade Shaders**: Various open-source licenses
 - **Manager Scripts**: Open source with attribution requirements
+- **Lossless Scaling**: Commercial software (not included)
 
 ## 🙏 Acknowledgments
 
@@ -262,10 +415,14 @@ This project respects all component licenses:
 - **Chaotic AUR**: Package distribution for Arch Linux
 - **AMD FidelityFX**: CAS (Contrast Adaptive Sharpening) technology
 - **Linux Gaming Community**: Testing and feedback
+- **Lossless Scaling**: Frame generation technology
+- **Steam**: Platform integration and game library support
 
 ## 🔗 Useful Links
 
 - [VkBasalt Official Repository](https://github.com/DadSchoorse/vkBasalt)
 - [ReShade Shader Database](https://reshade.me/)
+- [Lossless Scaling on Steam](https://store.steampowered.com/app/993090/Lossless_Scaling/)
 - [Vulkan API Documentation](https://www.vulkan.org/)
 - [ProtonDB (Steam Play Compatibility)](https://www.protondb.com/)
+- [Steam Deck Gaming](https://store.steampowered.com/steamdeck)
