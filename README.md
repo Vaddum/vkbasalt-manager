@@ -72,24 +72,6 @@ Graphical interface for managing VkBasalt on Steam Deck. Provides easy installat
 - **Toggle Effects**: Press configured key (default: Home)
 - **Real-time**: No restart required
 
-## Compatibility
-
-### Platforms
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Steam Deck | ✅ Full | Primary target |
-| Arch Linux | ✅ Full | Native support |
-| Manjaro | ✅ Full | Arch-based |
-| Other Linux | ⚠️ Limited | Manual dependencies |
-
-### Games
-| Renderer | Support | Notes |
-|----------|---------|-------|
-| Vulkan Native | ✅ Full | Best performance |
-| DXVK (DX→Vulkan) | ✅ Full | Most Steam games |
-| OpenGL | ❌ None | Not supported |
-| DirectX Native | ❌ None | Requires DXVK |
-
 ## File Locations
 
 | Component | Path |
