@@ -157,7 +157,7 @@ install_vkbasalt() {
 }
 
 install_vkbasalt_complete() {
-    show_info "🚀 VkBasalt Manager Installation\n\nInstalling on: Steam Deck\n\nThe installation will download and install:\n• VkBasalt\n• ReShade shaders\n• Default configurations\n• Graphical interface\n\nThis may take a few minutes..."
+    show_info "🚀 VkBasalt Manager Installation\n\nThis will download and install:\n• VkBasalt\n• ReShade shaders\n• Default configurations\n• Graphical interface\n\nThis may take a few minutes..."
 
     (
         echo "10" ; echo "# System check..."
@@ -202,7 +202,7 @@ install_vkbasalt_complete() {
     if [ $? -eq 0 ] && [ -f "${USER_HOME}/.local/lib/libvkbasalt.so" ] && [ -f "${USER_HOME}/.local/lib32/libvkbasalt.so" ]; then
         local script_moved_msg=""
         if [ "$(realpath "$0")" != "$SCRIPT_PATH" ]; then
-            script_moved_msg="\n\n📁 The script has been moved to: $SCRIPT_PATH\n💡 You can now delete the original script file."
+            script_moved_msg="\n\n📁 The script has been moved to: $SCRIPT_PATH"
         fi
 
         show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n🔧 Use this manager to configure effects and settings."
@@ -504,16 +504,40 @@ create_dynamic_config() {
         fi
     done
 
+    local temp_params=$(mktemp)
+    local temp_toggle_key=$(mktemp)
+
+    if [ -f "$CONFIG_FILE" ]; then
+        grep -E "^[a-zA-Z].*=" "$CONFIG_FILE" | grep -v -E "^(effects|reshadeTexturePath|reshadeIncludePath|depthCapture|enableOnLaunch)" > "$temp_params" 2>/dev/null || true
+        grep "^toggleKey" "$CONFIG_FILE" > "$temp_toggle_key" 2>/dev/null || echo "toggleKey = Home" > "$temp_toggle_key"
+    else
+        echo "toggleKey = Home" > "$temp_toggle_key"
+    fi
+
     mkdir -p "$(dirname "$CONFIG_FILE")"
+
     cat > "$CONFIG_FILE" << EOF
 effects = $lowercase_shaders
 reshadeTexturePath = $TEXTURE_PATH
 reshadeIncludePath = $SHADER_PATH
 depthCapture = off
-toggleKey = Home
 enableOnLaunch = True
 
 EOF
+
+    cat "$temp_toggle_key" >> "$CONFIG_FILE"
+    echo "" >> "$CONFIG_FILE"
+
+    get_saved_or_default() {
+        local param_name="$1"
+        local default_value="$2"
+        local saved_value=$(grep "^$param_name" "$temp_params" 2>/dev/null | cut -d'=' -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        if [ ! -z "$saved_value" ]; then
+            echo "$saved_value"
+        else
+            echo "$default_value"
+        fi
+    }
 
     for shader in "${SHADER_ARRAY[@]}"; do
         shader=$(echo "$shader" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
@@ -521,20 +545,28 @@ EOF
 
         case "$shader_lower" in
             "cas")
-                echo "casSharpness = 0.5" >> "$CONFIG_FILE"
+                local cas_sharpness=$(get_saved_or_default "casSharpness" "0.5")
+                echo "casSharpness = $cas_sharpness" >> "$CONFIG_FILE"
                 ;;
             "fxaa")
-                echo "fxaaQualitySubpix = 0.75" >> "$CONFIG_FILE"
-                echo "fxaaQualityEdgeThreshold = 0.125" >> "$CONFIG_FILE"
+                local fxaa_subpix=$(get_saved_or_default "fxaaQualitySubpix" "0.75")
+                local fxaa_edge=$(get_saved_or_default "fxaaQualityEdgeThreshold" "0.125")
+                echo "fxaaQualitySubpix = $fxaa_subpix" >> "$CONFIG_FILE"
+                echo "fxaaQualityEdgeThreshold = $fxaa_edge" >> "$CONFIG_FILE"
                 ;;
             "smaa")
-                echo "smaaEdgeDetection = luma" >> "$CONFIG_FILE"
-                echo "smaaThreshold = 0.05" >> "$CONFIG_FILE"
-                echo "smaaMaxSearchSteps = 32" >> "$CONFIG_FILE"
+                local smaa_detection=$(get_saved_or_default "smaaEdgeDetection" "luma")
+                local smaa_threshold=$(get_saved_or_default "smaaThreshold" "0.05")
+                local smaa_steps=$(get_saved_or_default "smaaMaxSearchSteps" "32")
+                echo "smaaEdgeDetection = $smaa_detection" >> "$CONFIG_FILE"
+                echo "smaaThreshold = $smaa_threshold" >> "$CONFIG_FILE"
+                echo "smaaMaxSearchSteps = $smaa_steps" >> "$CONFIG_FILE"
                 ;;
             "dls")
-                echo "dlsSharpening = 0.5" >> "$CONFIG_FILE"
-                echo "dlsDenoise = 0.20" >> "$CONFIG_FILE"
+                local dls_sharpening=$(get_saved_or_default "dlsSharpening" "0.5")
+                local dls_denoise=$(get_saved_or_default "dlsDenoise" "0.20")
+                echo "dlsSharpening = $dls_sharpening" >> "$CONFIG_FILE"
+                echo "dlsDenoise = $dls_denoise" >> "$CONFIG_FILE"
                 ;;
             *)
                 local shader_path=""
@@ -549,10 +581,13 @@ EOF
 
                 if [ ! -z "$shader_path" ]; then
                     echo "$shader_lower = $shader_path" >> "$CONFIG_FILE"
+                    grep "^${shader_lower}" "$temp_params" 2>/dev/null | grep -v "^${shader_lower} =" >> "$CONFIG_FILE" || true
                 fi
                 ;;
         esac
     done
+
+    rm -f "$temp_params" "$temp_toggle_key"
 }
 
 create_default_config() {
