@@ -12,10 +12,10 @@
 
 ## Quick Start
 
-1. Download `vkbasalt_manager.sh`
-2. `chmod +x vkbasalt_manager.sh`
-3. `./vkbasalt_manager.sh`
-4. Follow the installation wizard
+Download `vkbasalt_manager.sh`
+`chmod +x vkbasalt_manager.sh`
+`./vkbasalt_manager.sh`
+Follow the installation wizard
 
 ## Features
 
@@ -77,8 +77,8 @@
 | **Uninstall** | Remove VkBasalt completely |
 
 ### In-Game Controls
-- **Toggle Effects**: Press configured key (default: Home)
-- **Real-time**: No restart required
+**Toggle Effects**: Press configured key (default: Home)
+**Real-time**: No restart required
 
 ## File Locations
 
@@ -132,9 +132,3 @@
 | `wget` | Downloads | ✅ |
 | `unzip` | Archives | ✅ |
 | `tar` | Packages | ✅ |
-
-## License
-
-MIT License - Community project, not officially supported by Valve or VkBasalt developers.
-
-</div>
