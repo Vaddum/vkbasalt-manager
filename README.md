@@ -1,6 +1,12 @@
 # VkBasalt Manager
 
-Graphical interface for managing VkBasalt on Steam Deck. Provides easy installation, configuration, and shader management for Vulkan post-processing effects.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/vkbasalt-manager.png" alt="VkBasalt Manager" width="128" height="128">
+  <br>
+  <em>Graphical interface for managing VkBasalt on Steam Deck</em>
+</div>
+
+Provides easy installation, configuration, and shader management for Vulkan post-processing effects.
 
 ## Quick Start
 
@@ -124,7 +130,3 @@ Graphical interface for managing VkBasalt on Steam Deck. Provides easy installat
 | `wget` | Downloads | ✅ |
 | `unzip` | Archives | ✅ |
 | `tar` | Packages | ✅ |
-
-## License
-
-MIT License - Community project, not officially supported by Valve or VkBasalt developers.
