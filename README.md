@@ -32,16 +32,29 @@ Graphical interface for managing VkBasalt on Steam Deck. Provides easy installat
 ### External (ReShade)
 | Effect | Complexity | Description |
 |--------|------------|-------------|
-| **AdaptiveSharpen** | 🟠 Medium | Smart edge-aware sharpening |
-| **Border** | 🟢 Light | Customizable screen borders |
+| **4xBRZ** | 🔴 Heavy | Complex pixel art upscaling for retro games |
+| **AdaptiveSharpen** | 🟠 Medium | Smart edge-aware sharpening with minimal artifacts |
+| **Border** | 🟢 Light | Adds customizable borders to fix edges |
+| **Cartoon** | 🟠 Medium | Creates cartoon-like edge enhancement |
 | **Clarity** | 🔴 Heavy | Advanced sharpening with blur masking |
-| **CRT** | 🔴 Heavy | Retro CRT monitor simulation |
-| **Curves** | 🟢 Light | S-curve contrast adjustment |
-| **DPX** | 🟠 Medium | Film-style color grading |
-| **FakeHDR** | 🔴 Heavy | HDR simulation with bloom |
-| **FilmGrain** | 🟠 Medium | Realistic film grain |
-| **LumaSharpen** | 🟠 Medium | Luminance-based sharpening |
-| **Vibrance** | 🟢 Light | Smart saturation enhancement |
+| **CRT** | 🔴 Heavy | Simulates old CRT monitor appearance |
+| **Curves** | 🟢 Light | S-curve contrast without clipping |
+| **Daltonize** | 🟢 Light | Color blindness correction filter |
+| **Defring** | 🟢 Light | Removes chromatic aberration/fringing |
+| **DPX** | 🟠 Medium | Film-style color grading effect |
+| **FakeHDR** | 🔴 Heavy | Simulates HDR with bloom effects |
+| **FilmGrain** | 🟠 Medium | Adds realistic film grain noise |
+| **Levels** | 🟢 Light | Adjusts black/white points range |
+| **LiftGammaGain** | 🟢 Light | Pro shadows/midtones/highlights tool |
+| **LumaSharpen** | 🟠 Medium | Luminance-based detail enhancement |
+| **Monochrome** | 🟢 Light | Black&White conversion with film presets |
+| **Nostalgia** | 🟠 Medium | Retro gaming visual style emulation |
+| **Sepia** | 🟢 Light | Vintage sepia tone effect |
+| **SmartSharp** | 🔴 Heavy | Depth-aware intelligent sharpening |
+| **Technicolor** | 🟢 Light | Classic vibrant film process look |
+| **Tonemap** | 🟢 Light | Comprehensive tone mapping controls |
+| **Vibrance** | 🟢 Light | Smart saturation enhancement tool |
+| **Vignette** | 🟠 Medium | Darkened edges camera lens effect |
 
 ## Usage
 
@@ -58,6 +71,24 @@ Graphical interface for managing VkBasalt on Steam Deck. Provides easy installat
 ### In-Game Controls
 - **Toggle Effects**: Press configured key (default: Home)
 - **Real-time**: No restart required
+
+## Compatibility
+
+### Platforms
+| Platform | Status | Notes |
+|----------|--------|-------|
+| Steam Deck | ✅ Full | Primary target |
+| Arch Linux | ✅ Full | Native support |
+| Manjaro | ✅ Full | Arch-based |
+| Other Linux | ⚠️ Limited | Manual dependencies |
+
+### Games
+| Renderer | Support | Notes |
+|----------|---------|-------|
+| Vulkan Native | ✅ Full | Best performance |
+| DXVK (DX→Vulkan) | ✅ Full | Most Steam games |
+| OpenGL | ❌ None | Not supported |
+| DirectX Native | ❌ None | Requires DXVK |
 
 ## File Locations
 
@@ -111,3 +142,7 @@ Graphical interface for managing VkBasalt on Steam Deck. Provides easy installat
 | `wget` | Downloads | ✅ |
 | `unzip` | Archives | ✅ |
 | `tar` | Packages | ✅ |
+
+## License
+
+MIT License - Community project, not officially supported by Valve or VkBasalt developers.
