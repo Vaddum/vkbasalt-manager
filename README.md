@@ -12,9 +12,12 @@
 
 ## Quick Start
 
-Download `vkbasalt_manager.sh`
+`vkbasalt_manager.sh`
+
 `chmod +x vkbasalt_manager.sh`
+
 `./vkbasalt_manager.sh`
+
 Follow the installation wizard
 
 ## Features
@@ -78,6 +81,7 @@ Follow the installation wizard
 
 ### In-Game Controls
 **Toggle Effects**: Press configured key (default: Home)
+
 **Real-time**: No restart required
 
 ## File Locations
