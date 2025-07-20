@@ -214,6 +214,56 @@ install_vkbasalt_complete() {
 }
 
 create_icon_and_desktop() {
+    local ICON_URL="https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/main/vkbasalt-manager.png"
+    local final_icon_path="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.png"
+
+    local download_success=false
+
+    if command -v wget &> /dev/null; then
+        if wget -q --timeout=10 --user-agent="Mozilla/5.0" "$ICON_URL" -O "$final_icon_path" 2>/dev/null; then
+            if file "$final_icon_path" 2>/dev/null | grep -qi "image\|png"; then
+                ICON_PATH="$final_icon_path"
+                download_success=true
+            else
+                rm -f "$final_icon_path"
+            fi
+        fi
+    elif command -v curl &> /dev/null; then
+        if curl -s --max-time 10 -A "Mozilla/5.0" "$ICON_URL" -o "$final_icon_path" 2>/dev/null; then
+            if file "$final_icon_path" 2>/dev/null | grep -qi "image\|png"; then
+                ICON_PATH="$final_icon_path"
+                download_success=true
+            else
+                rm -f "$final_icon_path"
+            fi
+        fi
+    fi
+
+    if [ "$download_success" = false ]; then
+        create_default_svg_icon
+    fi
+
+    cat > "$DESKTOP_FILE" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VkBasalt Manager
+Comment=VkBasalt manager with graphical interface for Steam Deck
+Exec=$SCRIPT_PATH
+Icon=$ICON_PATH
+Terminal=false
+StartupNotify=true
+NoDisplay=true
+StartupWMClass=zenity
+MimeType=
+EOF
+
+    chmod +x "$DESKTOP_FILE" 2>/dev/null || true
+}
+
+create_default_svg_icon() {
+    ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.svg"
+
     cat > "$ICON_PATH" << 'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
@@ -262,24 +312,6 @@ create_icon_and_desktop() {
   </g>
 </svg>
 EOF
-
-    # Fichier .desktop modifié pour apparaître UNIQUEMENT sur le bureau
-    cat > "$DESKTOP_FILE" << EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=VkBasalt Manager
-Comment=VkBasalt manager with graphical interface for Steam Deck
-Exec=$SCRIPT_PATH
-Icon=$ICON_PATH
-Terminal=false
-StartupNotify=true
-NoDisplay=true
-StartupWMClass=zenity
-MimeType=
-EOF
-
-    chmod +x "$DESKTOP_FILE" 2>/dev/null || true
 }
 
 uninstall_vkbasalt() {
