@@ -1,6 +1,6 @@
 # 🎮 Gestionnaire VkBasalt pour Steam Deck
 
-Interface graphique pour installer et configurer VkBasalt - Améliorez vos jeux avec des effets visuels.
+Interface graphique française pour installer et configurer VkBasalt - Améliorez vos jeux avec des effets visuels.
 
 ## 🚀 Installation Rapide
 
@@ -17,22 +17,23 @@ Interface graphique pour installer et configurer VkBasalt - Améliorez vos jeux 
 
 - **Installation automatique** de VkBasalt en un clic
 - **Interface française** avec Zenity
-- **8 effets disponibles** : 4 intégrés + 4 shaders externes essentiels
+- **9 effets disponibles** : 4 intégrés + 5 shaders externes essentiels
 - **Configuration avancée** pour chaque effet
 - **Touche de basculement** personnalisable (défaut : `Home`)
 
 ### Effets Disponibles
 
-| Type | Nom | Description |
-|------|-----|-------------|
-| ⭐ Intégré | **CAS** | Netteté adaptative AMD |
-| ⭐ Intégré | **FXAA** | Anti-aliasing rapide |
-| ⭐ Intégré | **SMAA** | Anti-aliasing haute qualité |
-| ⭐ Intégré | **DLS** | Netteté luma débruitée |
-| 🔧 Externe | **LumaSharpen** | Netteté populaire |
-| 🔧 Externe | **Vibrance** | Amélioration couleurs |
-| 🔧 Externe | **Clarity** | Netteté avancée |
-| 🔧 Externe | **Netteté Adaptative** | Netteté intelligente |
+| Nom | Description |
+|-----|-------------|
+| **🔵 CAS** | Netteté adaptative AMD |
+| **🔵 FXAA** | Anti-aliasing rapide |
+| **🔵 SMAA** | Anti-aliasing haute qualité |
+| **🔵 DLS** | Netteté luma débruitée |
+| **🟢 LumaSharpen** | Netteté populaire |
+| **🟢 Vibrance** | Amélioration couleurs |
+| **🟠 Clarity** | Netteté avancée |
+| **🟠 DPX** | Correction colorimétrique |
+| **🟠 Netteté Adaptative** | Netteté intelligente |
 
 ## 🎯 Utilisation
 
@@ -42,9 +43,9 @@ Interface graphique pour installer et configurer VkBasalt - Améliorez vos jeux 
 
 ## ⚙️ Configurations Recommandées
 
-- **Général :** CAS (50%) + Vibrance
-- **Jeux pixellisés :** SMAA + LumaSharpen
-- **Jeux sombres :** CAS + Vibrance + Clarity
+- **Général :** 🔵 CAS (50%) + 🟢 Vibrance
+- **Jeux pixellisés :** 🟡 SMAA + 🟢 LumaSharpen
+- **Jeux sombres :** 🔵 CAS + 🟢 Vibrance + 🟠 Clarity
 
 ## 🛠️ Dépannage
 
