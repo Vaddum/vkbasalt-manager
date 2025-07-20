@@ -127,12 +127,3 @@ Follow the installation wizard
 |-----------|-------|---------|-------------|
 | Sharpening | 0.0-1.0 | 0.5 | Sharpening strength |
 | Denoise | 0.0-1.0 | 0.2 | Noise reduction |
-
-## Dependencies
-
-| Package | Purpose | Auto-installed |
-|---------|---------|----------------|
-| `zenity` | GUI dialogs | ✅ |
-| `wget` | Downloads | ✅ |
-| `unzip` | Archives | ✅ |
-| `tar` | Packages | ✅ |
