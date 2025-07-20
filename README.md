@@ -1,7 +1,7 @@
 # VkBasalt Manager
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/vkbasalt-manager.png" alt="VkBasalt Manager" width="128" height="128">
+  <img src="https://github.com/Vaddum/vkbasalt-manager/vkbasalt-manager.png" alt="VkBasalt Manager" width="128" height="128">
   <br>
   <em>Graphical interface for managing VkBasalt on Steam Deck</em>
 </div>
