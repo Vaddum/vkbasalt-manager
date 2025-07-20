@@ -5,9 +5,10 @@
   <br>
   
   <em>Graphical interface for managing VkBasalt on Steam Deck</em>
-</div>
-
-Provides easy installation, configuration, and shader management for Vulkan post-processing effects.
+  
+  <br><br>
+  
+  Provides easy installation, configuration, and shader management for Vulkan post-processing effects.
 
 ## Quick Start
 
@@ -131,3 +132,9 @@ Provides easy installation, configuration, and shader management for Vulkan post
 | `wget` | Downloads | ✅ |
 | `unzip` | Archives | ✅ |
 | `tar` | Packages | ✅ |
+
+## License
+
+MIT License - Community project, not officially supported by Valve or VkBasalt developers.
+
+</div>
