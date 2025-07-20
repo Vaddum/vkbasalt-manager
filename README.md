@@ -3,6 +3,7 @@
 <div align="center">
   <img src="https://github.com/Vaddum/vkbasalt-manager/blob/main/vkbasalt-manager.png" alt="VkBasalt Manager" width="128" height="128">
   <br>
+  
   <em>Graphical interface for managing VkBasalt on Steam Deck</em>
 </div>
 
