@@ -180,7 +180,7 @@ install_vkbasalt_complete() {
                 mkdir -p "${USER_HOME}/.config/reshade/Shaders"
                 mkdir -p "${USER_HOME}/.config/reshade/Textures"
 
-                for shader in LumaSharpen.fx Vibrance.fx Clarity.fx FXAA.fx SMAA.fx AdaptiveSharpen.fx; do
+                for shader in lumasharpen.fx vibrance.fx clarity.fx dpx.fx adaptivesharpen.fx; do
                     if [ -f "vkbasalt-manager-main/reshade/Shaders/$shader" ]; then
                         cp "vkbasalt-manager-main/reshade/Shaders/$shader" "${USER_HOME}/.config/reshade/Shaders/" 2>/dev/null || true
                     fi
@@ -321,14 +321,17 @@ uninstall_vkbasalt() {
 
 get_shader_description() {
     case "$1" in
-        "cas"|"CAS") echo "⭐ Netteté Adaptative AMD - Améliore les détails sans artefacts (Intégré)" ;;
-        "fxaa"|"FXAA") echo "⭐ Anti-Aliasing Rapide - Lisse les bords dentelés rapidement (Intégré)" ;;
-        "smaa"|"SMAA") echo "⭐ Anti-Aliasing Haute Qualité - Meilleur que FXAA (Intégré)" ;;
-        "dls"|"DLS") echo "⭐ Netteté Débruitée Luma - Netteté intelligente sans bruit (Intégré)" ;;
+        "cas"|"CAS") echo "🔵 Netteté Adaptative AMD - Améliore les détails sans artefacts (Intégré)" ;;
+        "fxaa"|"FXAA") echo "🔵 Anti-Aliasing Rapide - Lisse les bords dentelés rapidement (Intégré)" ;;
+        "smaa"|"SMAA") echo "🔵 Anti-Aliasing Haute Qualité - Meilleur que FXAA (Intégré)" ;;
+        "dls"|"DLS") echo "🔵 Netteté Débruitée Luma - Netteté intelligente sans bruit (Intégré)" ;;
+        "adaptivesharpen"|"AdaptiveSharpen") echo "🟠 Netteté Adaptative - Netteté sensible aux contours" ;;
+        "clarity"|"Clarity") echo "🟠 Clarity - Netteté avancée avec masquage de flou" ;;
+        "dpx"|"DPX") echo "🟠 DPX - Effet de correction colorimétrique style cinéma" ;;
         "lumasharpen"|"LumaSharpen") echo "🟢 LumaSharpen - Shader d'amélioration des détails le plus populaire" ;;
         "vibrance"|"Vibrance") echo "🟢 Vibrance - Outil essentiel d'amélioration des couleurs" ;;
-        "clarity"|"Clarity") echo "🟠 Clarity - Netteté avancée avec masquage de flou" ;;
-        "adaptivesharpen"|"AdaptiveSharpen") echo "🟠 Netteté Adaptative - Netteté intelligente sensible aux contours" ;;
+
+
         *) echo "$1 - Effet graphique disponible" ;;
     esac
 }
@@ -339,10 +342,11 @@ get_display_name() {
         "fxaa") echo "FXAA" ;;
         "smaa") echo "SMAA" ;;
         "dls") echo "DLS" ;;
+        "adaptivesharpen") echo "NettetéAdaptative" ;;
+        "clarity") echo "Clarity" ;;
+        "dpx") echo "DPX" ;;
         "lumasharpen") echo "LumaSharpen" ;;
         "vibrance") echo "Vibrance" ;;
-        "clarity") echo "Clarity" ;;
-        "adaptivesharpen") echo "NettetéAdaptative" ;;
         *) echo "$1" ;;
     esac
 }
@@ -380,7 +384,7 @@ manage_shaders() {
         checklist_items+=("$enabled" "$display_name" "$description")
     done
 
-    local essential_shaders=("LumaSharpen" "Vibrance" "Clarity" "AdaptiveSharpen")
+    local essential_shaders=("LumaSharpen" "Vibrance" "Clarity" "AdaptiveSharpen" "DPX")
     if [ -d "$SHADER_PATH" ]; then
         for shader_name in "${essential_shaders[@]}"; do
             local shader_file=""
@@ -425,10 +429,11 @@ manage_shaders() {
                     "FXAA") config_name="fxaa" ;;
                     "SMAA") config_name="smaa" ;;
                     "DLS") config_name="dls" ;;
-                    "LumaSharpen") config_name="lumasharpen" ;;
-                    "Vibrance") config_name="vibrance" ;;
+                    "DPX") config_name="dpx" ;;
                     "Clarity") config_name="clarity" ;;
+                    "LumaSharpen") config_name="lumasharpen" ;;
                     "NettetéAdaptative") config_name="adaptivesharpen" ;;
+                    "Vibrance") config_name="vibrance" ;;
                     *) config_name="${display_shader,,}" ;;
                 esac
 
@@ -556,7 +561,7 @@ show_config_menu() {
         local external_count=0
 
         if [ -d "$SHADER_PATH" ] && [ "$(ls -A $SHADER_PATH 2>/dev/null)" ]; then
-            local essential_shaders=("LumaSharpen" "Vibrance" "Clarity" "AdaptiveSharpen")
+            local essential_shaders=("LumaSharpen" "Vibrance" "Clarity" "AdaptiveSharpen" "DPX")
             for shader_name in "${essential_shaders[@]}"; do
                 for variation in "${shader_name}" "${shader_name,,}" "${shader_name^^}"; do
                     if [ -f "$SHADER_PATH/$variation.fx" ]; then
