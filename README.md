@@ -23,7 +23,7 @@ VkBasalt Manager provides easy installation, configuration, and shader managemen
 
 ## Supported Effects
 
-### Built-in Effects with advanced configuration (VkBasalt Native)
+### VkBasalt Native Effects 🔵
 
 ### CAS Settings
 - **Sharpness** (0.0-1.0, default: 0.5): Sharpening intensity
