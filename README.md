@@ -41,7 +41,7 @@ Follow the installation wizard
 | **DLS** | 🔵 Sharpening | Denoised Luma Sharpening |
 
 ### External (ReShade)
-| Effect | Complexity | Description |
+| Effect | Performance impact | Description |
 |--------|------------|-------------|
 | **4xBRZ** | 🔴 Heavy | Complex pixel art upscaling for retro games |
 | **AdaptiveSharpen** | 🟠 Medium | Smart edge-aware sharpening with minimal artifacts |
