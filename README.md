@@ -21,7 +21,7 @@ VkBasalt Manager provides easy installation, configuration, and shader managemen
 - **Toggle Key**: Customizable in-game hotkey
 - **Desktop Icon**: Easy access shortcut
 
-### VkBasalt Built-In Effects 🔵
+### VkBasalt Built-in Effects 🔵
 
 ### CAS Settings
 - **Sharpness** (0.0-1.0, default: 0.5): Sharpening intensity
