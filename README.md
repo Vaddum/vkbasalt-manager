@@ -23,12 +23,23 @@ VkBasalt Manager provides easy installation, configuration, and shader managemen
 
 ## Supported Effects
 
-### Built-in Effects (VkBasalt Native)
+### Built-in Effects with advanced configuration (VkBasalt Native)
 
-**CAS** - AMD Adaptive Sharpening
-**FXAA** - Fast Approximate Anti-Aliasing
-**SMAA** - Subpixel Morphological Anti-Aliasing (High-quality AA)
-**DLS** - Denoised Luma Sharpening
+### CAS Settings
+- **Sharpness** (0.0-1.0, default: 0.5): Sharpening intensity
+
+### FXAA Settings
+- **Subpix Quality** (0.0-1.0, default: 0.75): Subpixel antialiasing
+- **Edge Threshold** (0.063-0.333, default: 0.125): Edge detection sensitivity
+
+### SMAA Settings
+- **Edge Detection** (luma/color/depth, default: luma): Detection method
+- **Threshold** (0.01-0.20, default: 0.05): Sensitivity
+- **Max Steps** (8-64, default: 32): Quality vs performance
+
+### DLS Settings
+- **Sharpening** (0.0-1.0, default: 0.5): Sharpening strength
+- **Denoise** (0.0-1.0, default: 0.2): Noise reduction
 
 ### External Effects (ReShade)
 
@@ -94,21 +105,3 @@ Effects activate in real-time, no restart required.
 **Performance drops**: Disable heavy effects (🔴)
 
 **Toggle key not working**: Change the key in settings menu
-
-## Advanced Configuration
-
-### CAS Settings
-- **Sharpness** (0.0-1.0, default: 0.5): Sharpening intensity
-
-### FXAA Settings
-- **Subpix Quality** (0.0-1.0, default: 0.75): Subpixel antialiasing
-- **Edge Threshold** (0.063-0.333, default: 0.125): Edge detection sensitivity
-
-### SMAA Settings
-- **Edge Detection** (luma/color/depth, default: luma): Detection method
-- **Threshold** (0.01-0.20, default: 0.05): Sensitivity
-- **Max Steps** (8-64, default: 32): Quality vs performance
-
-### DLS Settings
-- **Sharpening** (0.0-1.0, default: 0.5): Sharpening strength
-- **Denoise** (0.0-1.0, default: 0.2): Noise reduction
