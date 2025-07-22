@@ -12,11 +12,11 @@
 
 ## Quick Start
 
-`vkbasalt_manager.sh`
+Download: `vkbasalt_manager.sh`
 
-`chmod +x vkbasalt_manager.sh`
+Run: `chmod +x vkbasalt_manager.sh`
 
-`./vkbasalt_manager.sh`
+Launch: `./vkbasalt_manager.sh`
 
 Follow the installation wizard
 
