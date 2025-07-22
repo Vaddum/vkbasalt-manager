@@ -583,22 +583,16 @@ EOF
             "fxaa")
                 local fxaa_subpix=$(get_saved_or_default "fxaaQualitySubpix" "0.75")
                 local fxaa_edge=$(get_saved_or_default "fxaaQualityEdgeThreshold" "0.125")
-                local fxaa_edge_min=$(get_saved_or_default "fxaaQualityEdgeThresholdMin" "0.0312")
                 echo "fxaaQualitySubpix = $fxaa_subpix" >> "$CONFIG_FILE"
                 echo "fxaaQualityEdgeThreshold = $fxaa_edge" >> "$CONFIG_FILE"
-                echo "fxaaQualityEdgeThresholdMin = $fxaa_edge_min" >> "$CONFIG_FILE"
                 ;;
             "smaa")
                 local smaa_detection=$(get_saved_or_default "smaaEdgeDetection" "luma")
                 local smaa_threshold=$(get_saved_or_default "smaaThreshold" "0.05")
                 local smaa_steps=$(get_saved_or_default "smaaMaxSearchSteps" "32")
-                local smaa_steps_diag=$(get_saved_or_default "smaaMaxSearchStepsDiag" "16")
-                local smaa_corner=$(get_saved_or_default "smaaCornerRounding" "25")
                 echo "smaaEdgeDetection = $smaa_detection" >> "$CONFIG_FILE"
                 echo "smaaThreshold = $smaa_threshold" >> "$CONFIG_FILE"
                 echo "smaaMaxSearchSteps = $smaa_steps" >> "$CONFIG_FILE"
-                echo "smaaMaxSearchStepsDiag = $smaa_steps_diag" >> "$CONFIG_FILE"
-                echo "smaaCornerRounding = $smaa_corner" >> "$CONFIG_FILE"
                 ;;
             "dls")
                 local dls_sharpness=$(get_saved_or_default "dlsSharpness" "0.5")
@@ -619,7 +613,6 @@ EOF
 
                 if [ ! -z "$shader_path" ]; then
                     echo "$shader_lower = $shader_path" >> "$CONFIG_FILE"
-                    grep "^${shader_lower}" "$temp_params" 2>/dev/null | grep -v "^${shader_lower} =" >> "$CONFIG_FILE" || true
                 fi
                 ;;
         esac
@@ -801,7 +794,6 @@ configure_cas() {
 configure_fxaa() {
     local subpix=$(grep "^fxaaQualitySubpix" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local edge=$(grep "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local edge_min=$(grep "^fxaaQualityEdgeThresholdMin" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
     local s=75; [ ! -z "$subpix" ] && s=$(awk "BEGIN {printf \"%.0f\", $subpix * 100}")
     local sp=$(zenity --scale --title="FXAA - Subpixel Quality" \
@@ -810,9 +802,10 @@ configure_fxaa() {
     if [ ! -z "$sp" ]; then
         local spf=$(awk "BEGIN {printf \"%.2f\", $sp / 100}")
 
-        # Configuration Edge Threshold
+        # CORRECTION : Calcul plus robuste pour Edge Threshold
         local e=23  # Valeur par défaut pour 0.125
         if [ ! -z "$edge" ]; then
+            # Assure que edge est dans la plage valide (0.063 à 0.333)
             local safe_edge=$(awk "BEGIN {
                 val = $edge
                 if (val < 0.063) val = 0.063
@@ -827,30 +820,9 @@ configure_fxaa() {
             --min-value=0 --max-value=100 --value=$e --step=5)
         if [ ! -z "$ed" ]; then
             local edf=$(awk "BEGIN {printf \"%.3f\", 0.063 + ($ed * 0.27 / 100)}")
-
-            # Configuration Edge Threshold Min
-            local em=35  # Valeur par défaut pour 0.0312
-            if [ ! -z "$edge_min" ]; then
-                local safe_edge_min=$(awk "BEGIN {
-                    val = $edge_min
-                    if (val < 0.0) val = 0.0
-                    if (val > 0.0833) val = 0.0833
-                    printf \"%.4f\", val
-                }")
-                em=$(awk "BEGIN {printf \"%.0f\", ($safe_edge_min) * 100 / 0.0833}")
-            fi
-
-            local edm=$(zenity --scale --title="FXAA - Edge Threshold Min" \
-                --text="Trims the algorithm from processing darks\nCurrent value: ${edge_min:-0.0312}\n\n0 = Process all dark areas\n100 = Skip most dark areas" \
-                --min-value=0 --max-value=100 --value=$em --step=5)
-            if [ ! -z "$edm" ]; then
-                local edmf=$(awk "BEGIN {printf \"%.4f\", ($edm * 0.0833 / 100)}")
-
-                grep -q "^fxaaQualitySubpix" "$CONFIG_FILE" && sed -i "s/^fxaaQualitySubpix.*/fxaaQualitySubpix = $spf/" "$CONFIG_FILE" || echo "fxaaQualitySubpix = $spf" >> "$CONFIG_FILE"
-                grep -q "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" && sed -i "s/^fxaaQualityEdgeThreshold.*/fxaaQualityEdgeThreshold = $edf/" "$CONFIG_FILE" || echo "fxaaQualityEdgeThreshold = $edf" >> "$CONFIG_FILE"
-                grep -q "^fxaaQualityEdgeThresholdMin" "$CONFIG_FILE" && sed -i "s/^fxaaQualityEdgeThresholdMin.*/fxaaQualityEdgeThresholdMin = $edmf/" "$CONFIG_FILE" || echo "fxaaQualityEdgeThresholdMin = $edmf" >> "$CONFIG_FILE"
-                show_info "FXAA settings updated\nSubpixel Quality: $spf\nEdge Threshold: $edf\nEdge Threshold Min: $edmf"
-            fi
+            grep -q "^fxaaQualitySubpix" "$CONFIG_FILE" && sed -i "s/^fxaaQualitySubpix.*/fxaaQualitySubpix = $spf/" "$CONFIG_FILE" || echo "fxaaQualitySubpix = $spf" >> "$CONFIG_FILE"
+            grep -q "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" && sed -i "s/^fxaaQualityEdgeThreshold.*/fxaaQualityEdgeThreshold = $edf/" "$CONFIG_FILE" || echo "fxaaQualityEdgeThreshold = $edf" >> "$CONFIG_FILE"
+            show_info "FXAA settings updated\nSubpixel Quality: $spf\nEdge Threshold: $edf"
         fi
     fi
 }
@@ -858,8 +830,6 @@ configure_fxaa() {
 configure_smaa() {
     local thresh=$(grep "^smaaThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     local steps=$(grep "^smaaMaxSearchSteps" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local steps_diag=$(grep "^smaaMaxSearchStepsDiag" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
-    local corner=$(grep "^smaaCornerRounding" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
 
     local edge_detection=$(zenity --list --title="SMAA - Edge Detection Method" \
         --text="Choose edge detection method:" \
@@ -871,7 +841,7 @@ configure_smaa() {
         2>/dev/null)
 
     if [ ! -z "$edge_detection" ]; then
-        # Configuration Threshold
+        # CORRECTION : Calcul plus précis pour threshold (plage 0.01 à 0.20)
         local t=21  # Valeur par défaut pour 0.05
         if [ ! -z "$thresh" ]; then
             local safe_thresh=$(awk "BEGIN {
@@ -890,69 +860,28 @@ configure_smaa() {
         if [ ! -z "$th" ]; then
             local thf=$(awk "BEGIN {printf \"%.3f\", 0.01 + ($th * 0.19 / 100)}")
 
-            # Configuration Max Search Steps
+            # CORRECTION : Calcul plus précis pour steps (plage 8 à 64)
             local s=43  # Valeur par défaut pour 32
             if [ ! -z "$steps" ]; then
                 local safe_steps=$(awk "BEGIN {
                     val = $steps
                     if (val < 8) val = 8
-                    if (val > 112) val = 112
+                    if (val > 64) val = 64
                     printf \"%.0f\", val
                 }")
-                s=$(awk "BEGIN {printf \"%.0f\", ($safe_steps - 8) * 100 / 104}")
+                s=$(awk "BEGIN {printf \"%.0f\", ($safe_steps - 8) * 100 / 56}")
             fi
 
             local st=$(zenity --scale --title="SMAA - Maximum Search Steps" \
-                --text="Adjust horizontal/vertical search quality vs performance\nCurrent value: ${steps:-32}\n\n0 = Faster (lower quality)\n100 = Slower (higher quality)" \
+                --text="Adjust search quality vs performance\nCurrent value: ${steps:-32}\n\n0 = Faster (lower quality)\n100 = Slower (higher quality)" \
                 --min-value=0 --max-value=100 --value=$s --step=5)
 
             if [ ! -z "$st" ]; then
-                local stf=$(awk "BEGIN {printf \"%.0f\", 8 + ($st * 104 / 100)}")
-
-                # Configuration Max Search Steps Diagonal
-                local sd=80  # Valeur par défaut pour 16
-                if [ ! -z "$steps_diag" ]; then
-                    local safe_steps_diag=$(awk "BEGIN {
-                        val = $steps_diag
-                        if (val < 0) val = 0
-                        if (val > 20) val = 20
-                        printf \"%.0f\", val
-                    }")
-                    sd=$(awk "BEGIN {printf \"%.0f\", ($safe_steps_diag) * 100 / 20}")
-                fi
-
-                local std=$(zenity --scale --title="SMAA - Maximum Diagonal Search Steps" \
-                    --text="Adjust diagonal search quality vs performance\nCurrent value: ${steps_diag:-16}\n\n0 = Faster (lower quality)\n100 = Slower (higher quality)" \
-                    --min-value=0 --max-value=100 --value=$sd --step=5)
-
-                if [ ! -z "$std" ]; then
-                    local stdf=$(awk "BEGIN {printf \"%.0f\", ($std * 20 / 100)}")
-
-                    # Configuration Corner Rounding
-                    local cr=25  # Valeur par défaut pour 25
-                    if [ ! -z "$corner" ]; then
-                        local safe_corner=$(awk "BEGIN {
-                            val = $corner
-                            if (val < 0) val = 0
-                            if (val > 100) val = 100
-                            printf \"%.0f\", val
-                        }")
-                        cr=$safe_corner
-                    fi
-
-                    local cro=$(zenity --scale --title="SMAA - Corner Rounding" \
-                        --text="Adjust how much sharp corners will be rounded\nCurrent value: ${corner:-25}\n\n0 = No corner rounding\n100 = Maximum corner rounding" \
-                        --min-value=0 --max-value=100 --value=$cr --step=5)
-
-                    if [ ! -z "$cro" ]; then
-                        grep -q "^smaaEdgeDetection" "$CONFIG_FILE" && sed -i "s/^smaaEdgeDetection.*/smaaEdgeDetection = $edge_detection/" "$CONFIG_FILE" || echo "smaaEdgeDetection = $edge_detection" >> "$CONFIG_FILE"
-                        grep -q "^smaaThreshold" "$CONFIG_FILE" && sed -i "s/^smaaThreshold.*/smaaThreshold = $thf/" "$CONFIG_FILE" || echo "smaaThreshold = $thf" >> "$CONFIG_FILE"
-                        grep -q "^smaaMaxSearchSteps" "$CONFIG_FILE" && sed -i "s/^smaaMaxSearchSteps.*/smaaMaxSearchSteps = $stf/" "$CONFIG_FILE" || echo "smaaMaxSearchSteps = $stf" >> "$CONFIG_FILE"
-                        grep -q "^smaaMaxSearchStepsDiag" "$CONFIG_FILE" && sed -i "s/^smaaMaxSearchStepsDiag.*/smaaMaxSearchStepsDiag = $stdf/" "$CONFIG_FILE" || echo "smaaMaxSearchStepsDiag = $stdf" >> "$CONFIG_FILE"
-                        grep -q "^smaaCornerRounding" "$CONFIG_FILE" && sed -i "s/^smaaCornerRounding.*/smaaCornerRounding = $cro/" "$CONFIG_FILE" || echo "smaaCornerRounding = $cro" >> "$CONFIG_FILE"
-                        show_info "SMAA settings updated\nEdge Detection: $edge_detection\nThreshold: $thf\nMax Search Steps: $stf\nMax Diagonal Steps: $stdf\nCorner Rounding: $cro"
-                    fi
-                fi
+                local stf=$(awk "BEGIN {printf \"%.0f\", 8 + ($st * 56 / 100)}")
+                grep -q "^smaaEdgeDetection" "$CONFIG_FILE" && sed -i "s/^smaaEdgeDetection.*/smaaEdgeDetection = $edge_detection/" "$CONFIG_FILE" || echo "smaaEdgeDetection = $edge_detection" >> "$CONFIG_FILE"
+                grep -q "^smaaThreshold" "$CONFIG_FILE" && sed -i "s/^smaaThreshold.*/smaaThreshold = $thf/" "$CONFIG_FILE" || echo "smaaThreshold = $thf" >> "$CONFIG_FILE"
+                grep -q "^smaaMaxSearchSteps" "$CONFIG_FILE" && sed -i "s/^smaaMaxSearchSteps.*/smaaMaxSearchSteps = $stf/" "$CONFIG_FILE" || echo "smaaMaxSearchSteps = $stf" >> "$CONFIG_FILE"
+                show_info "SMAA settings updated\nEdge Detection: $edge_detection\nThreshold: $thf\nMax Search Steps: $stf"
             fi
         fi
     fi
@@ -970,6 +899,7 @@ configure_dls() {
     if [ ! -z "$s" ]; then
         local sf=$(awk "BEGIN {printf \"%.2f\", $s / 100}")
 
+        # CORRECTION : Valeur par défaut correcte pour denoise
         local dv=17; [ ! -z "$denoise" ] && dv=$(awk "BEGIN {printf \"%.0f\", $denoise * 100}")
         local d=$(zenity --scale --title="DLS - Denoise Strength" \
             --text="Adjust noise reduction\nCurrent value: ${denoise:-0.17}\n\n0 = No denoising\n100 = Maximum denoising" \
