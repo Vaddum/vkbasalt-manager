@@ -205,7 +205,7 @@ install_vkbasalt_complete() {
             script_moved_msg="\n\n📁 The script has been moved to: $SCRIPT_PATH"
         fi
 
-        show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed and ready to use.\n\n🔧 Use this manager to configure effects and settings."
+        show_info "✅ Installation successful!$script_moved_msg\n\nVkBasalt Manager is now installed!\n\n🔧 Use this manager to configure effects and settings."
         return 0
     else
         show_error "❌ Installation failed!\n\nPossible causes:\n• Network connection issues\n• Missing dependencies\n• Insufficient permissions\n\nPlease check your internet connection and try again."
@@ -315,7 +315,7 @@ EOF
 }
 
 uninstall_vkbasalt() {
-    if show_question "🗑️ Uninstall VkBasalt?\n\n⚠️ WARNING: This will remove EVERYTHING:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n\nThis action is IRREVERSIBLE!\n\nContinue?"; then
+    if show_question "🗑️ Uninstall VkBasalt?\n\n⚠️ WARNING: This will remove:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n\nThis action is irreversible!\n\nContinue?"; then
         (
             echo "10" ; echo "# Removing VkBasalt Manager..."
             rm -f "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE"
@@ -336,7 +336,7 @@ uninstall_vkbasalt() {
             echo "100" ; echo "# Uninstallation complete"
         ) | zenity --progress --title="Uninstallation" --text="Removing all components..." --percentage=0 --auto-close --width=420 --height=110
 
-        show_info "✅ Uninstallation finished!\n\nVkBasalt has been completely removed from your Steam Deck."
+        show_info "✅ Uninstallation finished!\n\nVkBasalt has been completely removed."
         exit 0
     fi
 }
@@ -630,7 +630,7 @@ show_main_menu() {
     local install_status=$?
 
     if [ $install_status -eq 0 ]; then
-        if show_question "🚀 VkBasalt Manager - First Use\n\nVkBasalt is not yet installed!\n\nWould you like to proceed with automatic installation?"; then
+        if show_question "🚀 VkBasalt is not yet installed!\n\nWould you like to proceed with automatic installation?"; then
             install_vkbasalt_complete
             check_installation
             if [ $? -eq 2 ]; then
@@ -652,7 +652,6 @@ show_config_menu() {
     fi
 
     while true; do
-        # Calculer le nombre de shaders disponibles
         local shader_count=0
         local builtin_count=4  # CAS, FXAA, SMAA, DLS
         local external_count=0
@@ -663,7 +662,6 @@ show_config_menu() {
 
         shader_count=$((builtin_count + external_count))
 
-        # Construire le texte de statut
         local status_text=""
         if [ $external_count -gt 0 ]; then
             status_text="VkBasalt ready! ($shader_count shaders: $builtin_count built-in + $external_count external)"
@@ -671,7 +669,6 @@ show_config_menu() {
             status_text="VkBasalt ready! ($builtin_count built-in shaders available)"
         fi
 
-        # Vérifier les effets actifs
         local active_effects=""
         if [ -f "$CONFIG_FILE" ]; then
             active_effects=$(grep "^effects" "$CONFIG_FILE" | head -n1 | cut -d'=' -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
@@ -686,7 +683,7 @@ show_config_menu() {
         local choice=$(zenity --list --title="VkBasalt Manager" --text="$status_text" --column="Option" --column="Description" --width=420 --height=320 \
             "Shaders" "Manage active shaders" \
             "Toggle Key" "Change toggle key" \
-            "Advanced" "Advanced shader settings" \
+            "Advanced" "Advanced built-in effects settings" \
             "View Config" "View current configuration" \
             "Reset" "Reset to default values" \
             "Uninstall" "Uninstall VkBasalt" \
@@ -722,10 +719,10 @@ show_advanced_menu() {
         --text="Configure built-in VkBasalt effects:" \
         --column="Effect" --column="Description" \
         --width=500 --height=300 \
-        "CAS" "Contrast Adaptive Sharpening - AMD FidelityFX" \
-        "FXAA" "Fast Approximate Anti-Aliasing" \
-        "SMAA" "Subpixel Morphological Anti-Aliasing" \
-        "DLS" "Denoised Luma Sharpening - Intelligent sharpening" \
+        "CAS" "🔵 Contrast Adaptive Sharpening - AMD FidelityFX" \
+        "FXAA" "🔵 Fast Approximate Anti-Aliasing" \
+        "SMAA" "🔵 Subpixel Morphological Anti-Aliasing" \
+        "DLS" "🔵 Denoised Luma Sharpening - Intelligent sharpening" \
         2>/dev/null)
     case "$choice" in
         "CAS") configure_cas ;;
@@ -774,7 +771,7 @@ change_toggle_key() {
 
     if [ ! -z "$new_key" ]; then
         sed -i "s/^toggleKey.*/toggleKey = $new_key/" "$CONFIG_FILE"
-        show_info "Toggle key changed: $new_key\n\nNow use the '$new_key' key to enable/disable VkBasalt effects in your games."
+        show_info "Toggle key changed: $new_key\n\nNow use the '$new_key' key to enable/disable VkBasalt effects in game."
     fi
 }
 
@@ -841,8 +838,7 @@ configure_smaa() {
         2>/dev/null)
 
     if [ ! -z "$edge_detection" ]; then
-        # CORRECTION : Calcul plus précis pour threshold (plage 0.01 à 0.20)
-        local t=21  # Valeur par défaut pour 0.05
+        local t=21
         if [ ! -z "$thresh" ]; then
             local safe_thresh=$(awk "BEGIN {
                 val = $thresh
@@ -860,8 +856,7 @@ configure_smaa() {
         if [ ! -z "$th" ]; then
             local thf=$(awk "BEGIN {printf \"%.3f\", 0.01 + ($th * 0.19 / 100)}")
 
-            # CORRECTION : Calcul plus précis pour steps (plage 8 à 64)
-            local s=43  # Valeur par défaut pour 32
+            local s=43
             if [ ! -z "$steps" ]; then
                 local safe_steps=$(awk "BEGIN {
                     val = $steps
@@ -899,7 +894,6 @@ configure_dls() {
     if [ ! -z "$s" ]; then
         local sf=$(awk "BEGIN {printf \"%.2f\", $s / 100}")
 
-        # CORRECTION : Valeur par défaut correcte pour denoise
         local dv=17; [ ! -z "$denoise" ] && dv=$(awk "BEGIN {printf \"%.0f\", $denoise * 100}")
         local d=$(zenity --scale --title="DLS - Denoise Strength" \
             --text="Adjust noise reduction\nCurrent value: ${denoise:-0.17}\n\n0 = No denoising\n100 = Maximum denoising" \
@@ -914,16 +908,13 @@ configure_dls() {
     fi
 }
 
-# Fonction pour valider les paramètres existants
 validate_config_values() {
     if [ ! -f "$CONFIG_FILE" ]; then
         return
     fi
 
-    # Validation et correction automatique des valeurs hors limites
     local needs_update=false
 
-    # Vérifier CAS
     local cas_val=$(grep "^casSharpness" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     if [ ! -z "$cas_val" ]; then
         local corrected=$(awk "BEGIN {
@@ -938,7 +929,6 @@ validate_config_values() {
         fi
     fi
 
-    # Vérifier FXAA Edge Threshold
     local fxaa_edge=$(grep "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     if [ ! -z "$fxaa_edge" ]; then
         local corrected=$(awk "BEGIN {
