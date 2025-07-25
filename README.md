@@ -23,19 +23,19 @@ VkBasalt Manager provides easy installation, configuration, and shader managemen
 
 ### VkBasalt Built-in Effects 🔵
 
-### CAS Settings
+### CAS
 - **Sharpness** (0.0-1.0, default: 0.5): Sharpening intensity
 
-### FXAA Settings
+### FXAA
 - **Subpix Quality** (0.0-1.0, default: 0.75): Subpixel antialiasing
 - **Edge Threshold** (0.063-0.333, default: 0.125): Edge detection sensitivity
 
-### SMAA Settings
+### SMAA
 - **Edge Detection** (luma/color/depth, default: luma): Detection method
 - **Threshold** (0.01-0.20, default: 0.05): Sensitivity
 - **Max Steps** (8-64, default: 32): Quality vs performance
 
-### DLS Settings
+### DLS
 - **Sharpening** (0.0-1.0, default: 0.5): Sharpening strength
 - **Denoise** (0.0-1.0, default: 0.2): Noise reduction
 
