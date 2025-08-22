@@ -9,8 +9,68 @@ TEXTURE_PATH="${USER_HOME}/.config/reshade/Textures"
 SCRIPT_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.sh"
 ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.png"
 DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
+LOG_FILE="${USER_HOME}/.config/vkBasalt/manager.log"
+PROFILES_DIR="${USER_HOME}/.config/vkBasalt/profiles"
 
-mkdir -p "${USER_HOME}/Desktop"
+
+declare -A SHADER_DESC_CACHE
+
+mkdir -p "${USER_HOME}/Desktop" "${PROFILES_DIR}"
+
+log_error() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" >> "$LOG_FILE"
+}
+
+log_info() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO: $1" >> "$LOG_FILE"
+}
+
+cleanup_shader_name() {
+    local name="$1"
+    echo "$name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+download_with_retry() {
+    local url="$1"
+    local output="$2"
+    local max_attempts=3
+    local attempt=1
+
+    while [ $attempt -le $max_attempts ]; do
+        if wget -q --timeout=30 --tries=1 "$url" -O "$output" 2>/dev/null; then
+            log_info "Successfully downloaded $url"
+            return 0
+        fi
+        log_error "Download attempt $attempt failed for $url"
+        attempt=$((attempt + 1))
+        sleep 2
+    done
+    return 1
+}
+
+verify_package_integrity() {
+    local pkg_file="$1"
+    if ! tar -tf "$pkg_file" >/dev/null 2>&1; then
+        log_error "Corrupted package: $pkg_file"
+        return 1
+    fi
+    return 0
+}
+
+check_system_compatibility() {
+    if ! vulkaninfo --summary >/dev/null 2>&1; then
+        show_error "Vulkan is not available on this system"
+        return 1
+    fi
+
+    local available_space=$(df "${USER_HOME}" | awk 'NR==2 {print $4}')
+    if [ $available_space -lt 100000 ]; then
+        show_error "Insufficient disk space (minimum 100MB required)"
+        return 1
+    fi
+
+    return 0
+}
 
 check_dependencies() {
     local missing_deps=()
@@ -32,6 +92,7 @@ check_dependencies() {
     fi
 
     if [ ${#missing_deps[@]} -gt 0 ]; then
+        log_info "Installing missing dependencies: ${missing_deps[*]}"
         sudo steamos-readonly disable
         sudo pacman -S --noconfirm "${missing_deps[@]}"
         sudo steamos-readonly enable
@@ -80,6 +141,9 @@ move_script_to_final_location() {
 }
 
 install_vkbasalt() {
+    if ! grep -q SteamOS /etc/os-release 2>/dev/null ; then
+    return 1
+    fi
     if [ "$EUID" -eq 0 ]; then
         return 1
     fi
@@ -97,12 +161,17 @@ install_vkbasalt() {
     local VKBASALT_PKG_FILE=$(mktemp /tmp/vkbasalt.XXXXXX.tar.zst)
     local VKBASALT_LIB32_PKG_FILE=$(mktemp /tmp/vkbasalt.XXXXXX.lib32.tar.zst)
 
-    if ! wget -q "${AUR_BASE}${VKBASALT_PKG}" -O "${VKBASALT_PKG_FILE}"; then
+    if ! download_with_retry "${AUR_BASE}${VKBASALT_PKG}" "${VKBASALT_PKG_FILE}"; then
         rm -f "${VKBASALT_PKG_FILE}" "${VKBASALT_LIB32_PKG_FILE}"
         return 1
     fi
 
-    if ! wget -q "${AUR_BASE}${VKBASALT_LIB32_PKG}" -O "${VKBASALT_LIB32_PKG_FILE}"; then
+    if ! download_with_retry "${AUR_BASE}${VKBASALT_LIB32_PKG}" "${VKBASALT_LIB32_PKG_FILE}"; then
+        rm -f "${VKBASALT_PKG_FILE}" "${VKBASALT_LIB32_PKG_FILE}"
+        return 1
+    fi
+
+    if ! verify_package_integrity "$VKBASALT_PKG_FILE" || ! verify_package_integrity "$VKBASALT_LIB32_PKG_FILE"; then
         rm -f "${VKBASALT_PKG_FILE}" "${VKBASALT_LIB32_PKG_FILE}"
         return 1
     fi
@@ -147,15 +216,20 @@ install_vkbasalt() {
     rm -f "${VKBASALT_PKG_FILE}" "${VKBASALT_LIB32_PKG_FILE}"
     chown -R "${SYSTEM_USER}:${SYSTEM_USER}" "${USER_HOME}/.local/lib" "${USER_HOME}/.local/lib32" "${USER_HOME}/.local/share" "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade" 2>/dev/null || true
 
+    log_info "VkBasalt installation completed successfully"
     return 0
 }
 
 install_vkbasalt_complete() {
+    if ! check_system_compatibility; then
+        return 1
+    fi
+
     show_info "🚀 VkBasalt Manager Installation\n\nThis will download and install:\n• VkBasalt\n• ReShade shaders\n• Default configurations\n• Graphical interface\n\nThis may take a few minutes..."
 
     (
         echo "10" ; echo "# System check..."
-        mkdir -p "${USER_HOME}/Desktop" "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade" 2>/dev/null || true
+        mkdir -p "${USER_HOME}/Desktop" "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade" "${PROFILES_DIR}" 2>/dev/null || true
 
         echo "20" ; echo "# Checking dependencies..."
         check_dependencies 2>&1
@@ -169,7 +243,7 @@ install_vkbasalt_complete() {
         echo "70" ; echo "# Downloading ReShade shaders..."
         local TMPDIR=$(mktemp -d)
         cd "$TMPDIR"
-        if wget -q --timeout=30 https://github.com/Vaddum/vkbasalt-manager/archive/refs/heads/main.zip 2>/dev/null; then
+        if download_with_retry "https://github.com/Vaddum/vkbasalt-manager/archive/refs/heads/main.zip" "main.zip"; then
             if unzip -q main.zip 2>/dev/null && [ -d "vkbasalt-manager-main/reshade" ]; then
                 cp -rf vkbasalt-manager-main/reshade/* "${USER_HOME}/.config/reshade/" 2>/dev/null || true
             fi
@@ -211,7 +285,7 @@ create_desktop_entry() {
     local ICON_URL="https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/main/vkbasalt-manager.png"
 
     if command -v wget &> /dev/null; then
-        wget -q --timeout=10 --user-agent="Mozilla/5.0" "$ICON_URL" -O "$ICON_PATH" 2>/dev/null || ICON_PATH=""
+        download_with_retry "$ICON_URL" "$ICON_PATH" || ICON_PATH=""
     elif command -v curl &> /dev/null; then
         curl -s --max-time 10 -A "Mozilla/5.0" "$ICON_URL" -o "$ICON_PATH" 2>/dev/null || ICON_PATH=""
     fi
@@ -239,10 +313,13 @@ EOF
 }
 
 uninstall_vkbasalt() {
-    if show_question "🗑️ Uninstall VkBasalt?\n\n⚠️ WARNING: This will remove:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n\nThis action is irreversible!\n\nContinue?"; then
+    if show_question "🗑️ Uninstall VkBasalt?\n\n⚠️ WARNING: This will remove:\n• VkBasalt Manager\n• VkBasalt itself\n• All configurations\n• All shaders\n• All profiles\n\nThis action is irreversible!\n\nContinue?"; then
         (
             echo "10" ; echo "# Removing VkBasalt Manager..."
             rm -f "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE"
+
+            echo "20" ; echo "# Removing profiles..."
+            rm -rf "$PROFILES_DIR"
 
             echo "30" ; echo "# Removing VkBasalt..."
             rm -f "${USER_HOME}/.local/lib/libvkbasalt.so" "${USER_HOME}/.local/lib32/libvkbasalt.so"
@@ -263,6 +340,14 @@ uninstall_vkbasalt() {
         show_info "✅ Uninstallation finished!\n\nVkBasalt has been completely removed."
         exit 0
     fi
+}
+
+get_shader_description_cached() {
+    local shader="$1"
+    if [ -z "${SHADER_DESC_CACHE[$shader]}" ]; then
+        SHADER_DESC_CACHE[$shader]=$(get_shader_description "$shader")
+    fi
+    echo "${SHADER_DESC_CACHE[$shader]}"
 }
 
 get_shader_description() {
@@ -331,6 +416,185 @@ get_display_name() {
     esac
 }
 
+manage_profiles() {
+    local choice=$(zenity --list --title="Profile Management" \
+        --text="Manage VkBasalt configuration profiles:" \
+        --column="Action" --column="Description" \
+        --width=500 --height=350 \
+        "Create Profile" "Save current configuration as profile" \
+        "Load Profile" "Load an existing profile" \
+        "Delete Profile" "Remove a profile" \
+        "Export Profile" "Export profile to file" \
+        "Import Profile" "Import profile from file" \
+        2>/dev/null)
+
+    case "$choice" in
+        "Create Profile")
+            local profile_name=$(zenity --entry --title="Create Profile" --text="Enter profile name:" --width=350)
+            if [ ! -z "$profile_name" ]; then
+                local profile_file="${PROFILES_DIR}/${profile_name}.conf"
+                if [ -f "$profile_file" ]; then
+                    if show_question "Profile '$profile_name' already exists. Overwrite?"; then
+                        cp "$CONFIG_FILE" "$profile_file"
+                        show_info "Profile '$profile_name' updated successfully"
+                    fi
+                else
+                    cp "$CONFIG_FILE" "$profile_file"
+                    show_info "Profile '$profile_name' created successfully"
+                fi
+            fi
+            ;;
+        "Load Profile")
+            local profiles=($(ls "$PROFILES_DIR"/*.conf 2>/dev/null | xargs -n1 basename -s .conf))
+            if [ ${#profiles[@]} -eq 0 ]; then
+                show_error "No profiles found"
+                return
+            fi
+
+            local selected_profile=$(zenity --list --title="Load Profile" \
+                --text="Select a profile to load:" \
+                --column="Profile Name" \
+                --width=350 --height=300 \
+                "${profiles[@]}" 2>/dev/null)
+
+            if [ ! -z "$selected_profile" ]; then
+                backup_config
+                cp "${PROFILES_DIR}/${selected_profile}.conf" "$CONFIG_FILE"
+                show_info "Profile '$selected_profile' loaded successfully"
+            fi
+            ;;
+        "Delete Profile")
+            local profiles=($(ls "$PROFILES_DIR"/*.conf 2>/dev/null | xargs -n1 basename -s .conf))
+            if [ ${#profiles[@]} -eq 0 ]; then
+                show_error "No profiles found"
+                return
+            fi
+
+            local selected_profile=$(zenity --list --title="Delete Profile" \
+                --text="Select a profile to delete:" \
+                --column="Profile Name" \
+                --width=350 --height=300 \
+                "${profiles[@]}" 2>/dev/null)
+
+            if [ ! -z "$selected_profile" ]; then
+                if show_question "Delete profile '$selected_profile'?\n\nThis action cannot be undone."; then
+                    rm -f "${PROFILES_DIR}/${selected_profile}.conf"
+                    show_info "Profile '$selected_profile' deleted successfully"
+                fi
+            fi
+            ;;
+        "Export Profile")
+            local profiles=($(ls "$PROFILES_DIR"/*.conf 2>/dev/null | xargs -n1 basename -s .conf))
+            if [ ${#profiles[@]} -eq 0 ]; then
+                show_error "No profiles found"
+                return
+            fi
+
+            local selected_profile=$(zenity --list --title="Export Profile" \
+                --text="Select a profile to export:" \
+                --column="Profile Name" \
+                --width=350 --height=300 \
+                "${profiles[@]}" 2>/dev/null)
+
+            if [ ! -z "$selected_profile" ]; then
+                local export_file=$(zenity --file-selection --save --title="Export Profile" \
+                    --filename="${selected_profile}.conf" 2>/dev/null)
+                if [ ! -z "$export_file" ]; then
+                    cp "${PROFILES_DIR}/${selected_profile}.conf" "$export_file"
+                    show_info "Profile exported to: $export_file"
+                fi
+            fi
+            ;;
+        "Import Profile")
+            local import_file=$(zenity --file-selection --title="Import Profile" \
+                --file-filter="Configuration files (*.conf) | *.conf" 2>/dev/null)
+            if [ ! -z "$import_file" ] && [ -f "$import_file" ]; then
+                local profile_name=$(zenity --entry --title="Import Profile" \
+                    --text="Enter name for imported profile:" \
+                    --entry-text="$(basename "$import_file" .conf)" --width=350)
+                if [ ! -z "$profile_name" ]; then
+                    cp "$import_file" "${PROFILES_DIR}/${profile_name}.conf"
+                    show_info "Profile '$profile_name' imported successfully"
+                fi
+            fi
+            ;;
+    esac
+}
+
+run_diagnostics() {
+    local diag_output=$(mktemp)
+
+    {
+        echo "=== VkBasalt Manager Diagnostics ==="
+        echo "Date: $(date)"
+        echo "System: $(uname -a)"
+        echo ""
+        echo "=== Installation Status ==="
+        check_installation
+        local status=$?
+        case $status in
+            0) echo "Status: Not installed" ;;
+            1) echo "Status: VkBasalt installed, shaders missing" ;;
+            2) echo "Status: Fully installed" ;;
+        esac
+        echo ""
+        echo "=== VkBasalt Files ==="
+        ls -la "${USER_HOME}/.local/lib/libvkbasalt.so" 2>/dev/null || echo "64-bit: Not found"
+        ls -la "${USER_HOME}/.local/lib32/libvkbasalt.so" 2>/dev/null || echo "32-bit: Not found"
+        echo ""
+        echo "=== Vulkan Layer Files ==="
+        ls -la "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.json" 2>/dev/null || echo "64-bit layer: Not found"
+        ls -la "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.x86.json" 2>/dev/null || echo "32-bit layer: Not found"
+        echo ""
+        echo "=== Current Configuration ==="
+        if [ -f "$CONFIG_FILE" ]; then
+            cat "$CONFIG_FILE"
+        else
+            echo "No configuration file found"
+        fi
+        echo ""
+        echo "=== Available Shaders ==="
+        if [ -d "$SHADER_PATH" ]; then
+            ls -la "$SHADER_PATH"/*.fx 2>/dev/null || echo "No external shaders found"
+        else
+            echo "Shader directory not found"
+        fi
+        echo ""
+        echo "=== Profiles ==="
+        if [ -d "$PROFILES_DIR" ]; then
+            ls -la "$PROFILES_DIR"/*.conf 2>/dev/null || echo "No profiles found"
+        else
+            echo "Profiles directory not found"
+        fi
+        echo ""
+        echo "=== Recent Log Entries ==="
+        if [ -f "$LOG_FILE" ]; then
+            tail -20 "$LOG_FILE" 2>/dev/null || echo "No recent log entries"
+        else
+            echo "No log file found"
+        fi
+        echo ""
+        echo "=== System Information ==="
+        echo "Vulkan Support:"
+        vulkaninfo --summary 2>/dev/null || echo "Vulkan not available"
+        echo ""
+        echo "Disk Space:"
+        df -h "${USER_HOME}" | tail -1
+        echo ""
+        echo "Dependencies:"
+        for dep in zenity wget unzip tar vulkaninfo; do
+            if command -v $dep &> /dev/null; then
+                echo "$dep: Available"
+            else
+                echo "$dep: Missing"
+            fi
+        done
+    } > "$diag_output"
+
+    zenity --text-info --title="System Diagnostics" --filename="$diag_output" --width=800 --height=600
+    rm -f "$diag_output"
+}
+
 manage_shaders() {
     local current_effects=""
     if [ -f "$CONFIG_FILE" ]; then
@@ -346,7 +610,7 @@ manage_shaders() {
     is_effect_enabled() {
         local effect_to_check="$1"
         for active_effect in "${current_effects_array[@]}"; do
-            active_effect=$(echo "$active_effect" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            active_effect=$(cleanup_shader_name "$active_effect")
             if [[ "${active_effect,,}" == "${effect_to_check,,}" ]]; then
                 return 0
             fi
@@ -360,7 +624,7 @@ manage_shaders() {
         local enabled="FALSE"
         is_effect_enabled "$lowercase_name" && enabled="TRUE"
         local display_name=$(get_display_name "$shader_name")
-        local description=$(get_shader_description "$shader_name")
+        local description=$(get_shader_description_cached "$shader_name")
         checklist_items+=("$enabled" "$display_name" "$description")
     done
 
@@ -381,7 +645,7 @@ manage_shaders() {
                 local enabled="FALSE"
                 is_effect_enabled "${file_basename}" && enabled="TRUE"
                 local display_name=$(get_display_name "$file_basename")
-                local description=$(get_shader_description "$file_basename")
+                local description=$(get_shader_description_cached "$file_basename")
                 checklist_items+=("$enabled" "$display_name" "$description")
             fi
         done
@@ -453,6 +717,7 @@ create_dynamic_config() {
     local lowercase_shaders=""
     IFS=':' read -ra SHADER_ARRAY <<< "$selected_shaders"
     for shader in "${SHADER_ARRAY[@]}"; do
+        shader=$(cleanup_shader_name "$shader")
         if [ -z "$lowercase_shaders" ]; then
             lowercase_shaders="${shader,,}"
         else
@@ -496,7 +761,7 @@ EOF
     }
 
     for shader in "${SHADER_ARRAY[@]}"; do
-        shader=$(echo "$shader" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        shader=$(cleanup_shader_name "$shader")
         local shader_lower="${shader,,}"
 
         case "$shader_lower" in
@@ -543,10 +808,103 @@ EOF
     done
 
     rm -f "$temp_params" "$temp_toggle_key"
+    log_info "Configuration updated with effects: $lowercase_shaders"
 }
 
 create_default_config() {
     create_dynamic_config "cas"
+}
+
+command_line_interface() {
+    case "${1,,}" in
+        "install")
+            install_vkbasalt_complete
+            ;;
+        "uninstall")
+            if [ "$2" = "--force" ] || [ "$2" = "-f" ]; then
+                rm -rf "${USER_HOME}/.local/lib/libvkbasalt.so" "${USER_HOME}/.local/lib32/libvkbasalt.so"
+                rm -rf "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.json" "${USER_HOME}/.local/share/vulkan/implicit_layer.d/vkBasalt.x86.json"
+                rm -rf "${USER_HOME}/.config/vkBasalt" "${USER_HOME}/.config/reshade"
+                echo "VkBasalt uninstalled (forced)"
+            else
+                echo "Use --force or -f to confirm uninstallation"
+            fi
+            ;;
+        "status")
+            check_installation
+            case $? in
+                0) echo "VkBasalt: Not installed" ;;
+                1) echo "VkBasalt: Partially installed (missing shaders)" ;;
+                2) echo "VkBasalt: Fully installed" ;;
+            esac
+            ;;
+        "enable")
+            if [ ! -z "$2" ]; then
+                create_dynamic_config "$2"
+                echo "Effects enabled: $2"
+            else
+                echo "Usage: $0 enable <effect1:effect2:...>"
+            fi
+            ;;
+        "disable")
+            create_minimal_config
+            echo "All effects disabled"
+            ;;
+        "list")
+            echo "Available built-in effects: cas, fxaa, smaa, dls"
+            if [ -d "$SHADER_PATH" ]; then
+                echo "External shaders:"
+                ls "$SHADER_PATH"/*.fx 2>/dev/null | xargs -n1 basename -s .fx || echo "None found"
+            fi
+            ;;
+        "toggle")
+            if [ ! -z "$2" ]; then
+                sed -i "s/^toggleKey.*/toggleKey = $2/" "$CONFIG_FILE"
+                echo "Toggle key set to: $2"
+            else
+                echo "Usage: $0 toggle <key>"
+            fi
+            ;;
+        "backup")
+            echo "Feature removed"
+            ;;
+        "restore")
+            echo "Feature removed"
+            ;;
+        "diagnostics")
+            run_diagnostics
+            ;;
+        "update")
+            echo "Feature removed"
+            ;;
+        "help"|"--help"|"-h")
+            echo "VkBasalt Manager CLI"
+            echo "Usage: $0 [command] [options]"
+            echo ""
+            echo "Commands:"
+            echo "  install                    Install VkBasalt and dependencies"
+            echo "  uninstall [--force]        Uninstall VkBasalt"
+            echo "  status                     Show installation status"
+            echo "  enable <effects>           Enable specified effects (e.g., cas:fxaa)"
+            echo "  disable                    Disable all effects"
+            echo "  list                       List available effects"
+            echo "  toggle <key>               Set toggle key"
+            echo "  backup                     Feature removed"
+            echo "  restore <timestamp>        Feature removed"
+            echo "  diagnostics                Run system diagnostics"
+            echo "  update                     Feature removed"
+            echo "  help                       Show this help message"
+            echo ""
+            echo "Without arguments, the GUI will be launched."
+            ;;
+        *)
+            if [ ! -z "$1" ]; then
+                echo "Unknown command: $1"
+                echo "Use '$0 help' for available commands"
+                exit 1
+            fi
+            ;;
+    esac
 }
 
 show_main_menu() {
@@ -604,13 +962,15 @@ show_config_menu() {
             fi
         fi
 
-        local choice=$(zenity --list --title="VkBasalt Manager" --text="$status_text" --column="Option" --column="Description" --width=420 --height=320 \
-            "Shaders" "Manage active shaders" \
-            "Toggle Key" "Change toggle key" \
+        local choice=$(zenity --list --title="VkBasalt Manager" --text="$status_text" --column="Option" --column="Description" --width=480 --height=420 \
+            "Shaders" "Manage active shaders and effects" \
+            "Toggle Key" "Change toggle key for effects" \
             "Advanced" "Advanced built-in effects settings" \
-            "View Config" "View current configuration" \
+            "Profiles" "Manage configuration profiles" \
+            "View Config" "View current configuration file" \
+            "Diagnostics" "Run system diagnostics" \
             "Reset" "Reset to default values" \
-            "Uninstall" "Uninstall VkBasalt" \
+            "Uninstall" "Uninstall VkBasalt completely" \
             "Exit" "Exit VkBasalt Manager" \
             2>/dev/null)
 
@@ -618,13 +978,15 @@ show_config_menu() {
             "Shaders") manage_shaders ;;
             "Toggle Key") change_toggle_key ;;
             "Advanced") show_advanced_menu ;;
+            "Profiles") manage_profiles ;;
             "View Config")
                 if [ -f "$CONFIG_FILE" ]; then
-                    zenity --text-info --title="Current Configuration" --filename="$CONFIG_FILE" --width=560 --height=340 2>/dev/null
+                    zenity --text-info --title="Current Configuration" --filename="$CONFIG_FILE" --width=600 --height=400 2>/dev/null
                 else
                     show_error "Configuration file not found"
                 fi
                 ;;
+            "Diagnostics") run_diagnostics ;;
             "Reset")
                 if show_question "⚠️ Reset configuration to default values?"; then
                     create_default_config
@@ -695,6 +1057,7 @@ change_toggle_key() {
 
     if [ ! -z "$new_key" ]; then
         sed -i "s/^toggleKey.*/toggleKey = $new_key/" "$CONFIG_FILE"
+        log_info "Toggle key changed to: $new_key"
         show_info "Toggle key changed: $new_key\n\nNow use the '$new_key' key to enable/disable VkBasalt effects in game."
     fi
 }
@@ -708,6 +1071,7 @@ configure_cas() {
     if [ ! -z "$sharpness" ]; then
         local v=$(awk "BEGIN {printf \"%.2f\", $sharpness / 100}")
         grep -q "^casSharpness" "$CONFIG_FILE" && sed -i "s/^casSharpness.*/casSharpness = $v/" "$CONFIG_FILE" || echo "casSharpness = $v" >> "$CONFIG_FILE"
+        log_info "CAS sharpness set to: $v"
         show_info "CAS sharpness adjusted to: $v ($sharpness%)"
     fi
 }
@@ -741,6 +1105,7 @@ configure_fxaa() {
             local edf=$(awk "BEGIN {printf \"%.3f\", 0.063 + ($ed * 0.27 / 100)}")
             grep -q "^fxaaQualitySubpix" "$CONFIG_FILE" && sed -i "s/^fxaaQualitySubpix.*/fxaaQualitySubpix = $spf/" "$CONFIG_FILE" || echo "fxaaQualitySubpix = $spf" >> "$CONFIG_FILE"
             grep -q "^fxaaQualityEdgeThreshold" "$CONFIG_FILE" && sed -i "s/^fxaaQualityEdgeThreshold.*/fxaaQualityEdgeThreshold = $edf/" "$CONFIG_FILE" || echo "fxaaQualityEdgeThreshold = $edf" >> "$CONFIG_FILE"
+            log_info "FXAA settings updated: Subpixel=$spf, Edge=$edf"
             show_info "FXAA settings updated\nSubpixel Quality: $spf\nEdge Threshold: $edf"
         fi
     fi
@@ -798,6 +1163,7 @@ configure_smaa() {
                 grep -q "^smaaEdgeDetection" "$CONFIG_FILE" && sed -i "s/^smaaEdgeDetection.*/smaaEdgeDetection = $edge_detection/" "$CONFIG_FILE" || echo "smaaEdgeDetection = $edge_detection" >> "$CONFIG_FILE"
                 grep -q "^smaaThreshold" "$CONFIG_FILE" && sed -i "s/^smaaThreshold.*/smaaThreshold = $thf/" "$CONFIG_FILE" || echo "smaaThreshold = $thf" >> "$CONFIG_FILE"
                 grep -q "^smaaMaxSearchSteps" "$CONFIG_FILE" && sed -i "s/^smaaMaxSearchSteps.*/smaaMaxSearchSteps = $stf/" "$CONFIG_FILE" || echo "smaaMaxSearchSteps = $stf" >> "$CONFIG_FILE"
+                log_info "SMAA settings updated: Detection=$edge_detection, Threshold=$thf, Steps=$stf"
                 show_info "SMAA settings updated\nEdge Detection: $edge_detection\nThreshold: $thf\nMax Search Steps: $stf"
             fi
         fi
@@ -825,6 +1191,7 @@ configure_dls() {
             local df=$(awk "BEGIN {printf \"%.2f\", $d / 100}")
             grep -q "^dlsSharpness" "$CONFIG_FILE" && sed -i "s/^dlsSharpness.*/dlsSharpness = $sf/" "$CONFIG_FILE" || echo "dlsSharpness = $sf" >> "$CONFIG_FILE"
             grep -q "^dlsDenoise" "$CONFIG_FILE" && sed -i "s/^dlsDenoise.*/dlsDenoise = $df/" "$CONFIG_FILE" || echo "dlsDenoise = $df" >> "$CONFIG_FILE"
+            log_info "DLS settings updated: Sharpness=$sf, Denoise=$df"
             show_info "DLS settings updated\nSharpness: $sf\nDenoise: $df"
         fi
     fi
@@ -837,6 +1204,18 @@ validate_config_values() {
 
     local needs_update=false
 
+    local shader_path=$(grep "^reshadeIncludePath" "$CONFIG_FILE" | cut -d'=' -f2- | sed 's/^[[:space:]]*//')
+    if [ ! -z "$shader_path" ] && [ ! -d "$shader_path" ]; then
+        mkdir -p "$shader_path"
+        log_info "Created missing shader directory: $shader_path"
+    fi
+
+    local texture_path=$(grep "^reshadeTexturePath" "$CONFIG_FILE" | cut -d'=' -f2- | sed 's/^[[:space:]]*//')
+    if [ ! -z "$texture_path" ] && [ ! -d "$texture_path" ]; then
+        mkdir -p "$texture_path"
+        log_info "Created missing texture directory: $texture_path"
+    fi
+
     local cas_val=$(grep "^casSharpness" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
     if [ ! -z "$cas_val" ]; then
         local corrected=$(awk "BEGIN {
@@ -847,6 +1226,7 @@ validate_config_values() {
         }")
         if [ "$cas_val" != "$corrected" ]; then
             sed -i "s/^casSharpness.*/casSharpness = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected CAS sharpness value: $cas_val -> $corrected"
             needs_update=true
         fi
     fi
@@ -861,6 +1241,67 @@ validate_config_values() {
         }")
         if [ "$fxaa_edge" != "$corrected" ]; then
             sed -i "s/^fxaaQualityEdgeThreshold.*/fxaaQualityEdgeThreshold = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected FXAA edge threshold: $fxaa_edge -> $corrected"
+            needs_update=true
+        fi
+    fi
+
+    local smaa_thresh=$(grep "^smaaThreshold" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+    if [ ! -z "$smaa_thresh" ]; then
+        local corrected=$(awk "BEGIN {
+            val = $smaa_thresh
+            if (val < 0.01) val = 0.01
+            if (val > 0.20) val = 0.20
+            printf \"%.3f\", val
+        }")
+        if [ "$smaa_thresh" != "$corrected" ]; then
+            sed -i "s/^smaaThreshold.*/smaaThreshold = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected SMAA threshold: $smaa_thresh -> $corrected"
+            needs_update=true
+        fi
+    fi
+
+    local smaa_steps=$(grep "^smaaMaxSearchSteps" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+    if [ ! -z "$smaa_steps" ]; then
+        local corrected=$(awk "BEGIN {
+            val = $smaa_steps
+            if (val < 8) val = 8
+            if (val > 64) val = 64
+            printf \"%.0f\", val
+        }")
+        if [ "$smaa_steps" != "$corrected" ]; then
+            sed -i "s/^smaaMaxSearchSteps.*/smaaMaxSearchSteps = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected SMAA max search steps: $smaa_steps -> $corrected"
+            needs_update=true
+        fi
+    fi
+
+    local dls_sharp=$(grep "^dlsSharpness" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+    if [ ! -z "$dls_sharp" ]; then
+        local corrected=$(awk "BEGIN {
+            val = $dls_sharp
+            if (val < 0) val = 0
+            if (val > 1) val = 1
+            printf \"%.2f\", val
+        }")
+        if [ "$dls_sharp" != "$corrected" ]; then
+            sed -i "s/^dlsSharpness.*/dlsSharpness = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected DLS sharpness: $dls_sharp -> $corrected"
+            needs_update=true
+        fi
+    fi
+
+    local dls_denoise=$(grep "^dlsDenoise" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+    if [ ! -z "$dls_denoise" ]; then
+        local corrected=$(awk "BEGIN {
+            val = $dls_denoise
+            if (val < 0) val = 0
+            if (val > 1) val = 1
+            printf \"%.2f\", val
+        }")
+        if [ "$dls_denoise" != "$corrected" ]; then
+            sed -i "s/^dlsDenoise.*/dlsDenoise = $corrected/" "$CONFIG_FILE"
+            log_info "Corrected DLS denoise: $dls_denoise -> $corrected"
             needs_update=true
         fi
     fi
@@ -871,9 +1312,16 @@ validate_config_values() {
 }
 
 main() {
+    log_info "VkBasalt Manager started with arguments: $*"
+
+    if [ $# -gt 0 ]; then
+        command_line_interface "$@"
+        exit $?
+    fi
+
     check_dependencies
     validate_config_values
     show_main_menu
 }
 
-main
+main "$@"
