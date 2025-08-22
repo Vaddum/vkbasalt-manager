@@ -7,7 +7,7 @@ CONFIG_FILE="${USER_HOME}/.config/vkBasalt/vkBasalt.conf"
 SHADER_PATH="${USER_HOME}/.config/reshade/Shaders"
 TEXTURE_PATH="${USER_HOME}/.config/reshade/Textures"
 SCRIPT_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.sh"
-ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.svg"
+ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.png"
 DESKTOP_FILE="${USER_HOME}/Desktop/VkBasalt-Manager.desktop"
 
 mkdir -p "${USER_HOME}/Desktop"
@@ -32,15 +32,9 @@ check_dependencies() {
     fi
 
     if [ ${#missing_deps[@]} -gt 0 ]; then
-        if command -v steamos-readonly &> /dev/null; then
-            sudo steamos-readonly disable 2>/dev/null || true
-        fi
-
+        sudo steamos-readonly disable
         sudo pacman -S --noconfirm "${missing_deps[@]}"
-
-        if command -v steamos-readonly &> /dev/null; then
-            sudo steamos-readonly enable 2>/dev/null || true
-        fi
+        sudo steamos-readonly enable
     fi
 }
 
@@ -189,11 +183,11 @@ install_vkbasalt_complete() {
         move_script_to_final_location
 
         echo "90" ; echo "# Creating desktop icon..."
-        create_icon_and_desktop
+        create_desktop_entry
 
         echo "95" ; echo "# Setting permissions..."
         chmod +x "$SCRIPT_PATH" "$DESKTOP_FILE" 2>/dev/null || true
-        chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" "$ICON_PATH" "$DESKTOP_FILE" 2>/dev/null || true
+        chown "${SYSTEM_USER}:${SYSTEM_USER}" "$SCRIPT_PATH" "$DESKTOP_FILE" 2>/dev/null || true
 
         echo "100" ; echo "# Installation complete!"
 
@@ -213,34 +207,17 @@ install_vkbasalt_complete() {
     fi
 }
 
-create_icon_and_desktop() {
+create_desktop_entry() {
     local ICON_URL="https://raw.githubusercontent.com/Vaddum/vkbasalt-manager/main/vkbasalt-manager.png"
-    local final_icon_path="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.png"
-
-    local download_success=false
 
     if command -v wget &> /dev/null; then
-        if wget -q --timeout=10 --user-agent="Mozilla/5.0" "$ICON_URL" -O "$final_icon_path" 2>/dev/null; then
-            if file "$final_icon_path" 2>/dev/null | grep -qi "image\|png"; then
-                ICON_PATH="$final_icon_path"
-                download_success=true
-            else
-                rm -f "$final_icon_path"
-            fi
-        fi
+        wget -q --timeout=10 --user-agent="Mozilla/5.0" "$ICON_URL" -O "$ICON_PATH" 2>/dev/null || ICON_PATH=""
     elif command -v curl &> /dev/null; then
-        if curl -s --max-time 10 -A "Mozilla/5.0" "$ICON_URL" -o "$final_icon_path" 2>/dev/null; then
-            if file "$final_icon_path" 2>/dev/null | grep -qi "image\|png"; then
-                ICON_PATH="$final_icon_path"
-                download_success=true
-            else
-                rm -f "$final_icon_path"
-            fi
-        fi
+        curl -s --max-time 10 -A "Mozilla/5.0" "$ICON_URL" -o "$ICON_PATH" 2>/dev/null || ICON_PATH=""
     fi
 
-    if [ "$download_success" = false ]; then
-        create_default_svg_icon
+    if [ ! -f "$ICON_PATH" ] || ! file "$ICON_PATH" 2>/dev/null | grep -qi "image\|png"; then
+        ICON_PATH=""
     fi
 
     cat > "$DESKTOP_FILE" << EOF
@@ -259,59 +236,6 @@ MimeType=
 EOF
 
     chmod +x "$DESKTOP_FILE" 2>/dev/null || true
-}
-
-create_default_svg_icon() {
-    ICON_PATH="${USER_HOME}/.config/vkBasalt/vkbasalt-manager.svg"
-
-    cat > "$ICON_PATH" << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <defs>
-    <radialGradient id="bgGrad" cx="50%" cy="30%" r="80%">
-      <stop offset="0%" style="stop-color:#2c1810;stop-opacity:1" />
-      <stop offset="70%" style="stop-color:#1a0f0a;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0d0704;stop-opacity:1" />
-    </radialGradient>
-    <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4a4a4a;stop-opacity:1" />
-      <stop offset="30%" style="stop-color:#2d2d2d;stop-opacity:1" />
-      <stop offset="70%" style="stop-color:#1a1a1a;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f0f0f;stop-opacity:1" />
-    </linearGradient>
-    <radialGradient id="lavaGrad" cx="50%" cy="80%" r="60%">
-      <stop offset="0%" style="stop-color:#ffff00;stop-opacity:1" />
-      <stop offset="20%" style="stop-color:#ff8c00;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#ff4500;stop-opacity:1" />
-      <stop offset="80%" style="stop-color:#dc143c;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8b0000;stop-opacity:1" />
-    </radialGradient>
-    <linearGradient id="crackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffff66;stop-opacity:0.9" />
-      <stop offset="50%" style="stop-color:#ff6600;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#cc0000;stop-opacity:0.8" />
-    </linearGradient>
-  </defs>
-  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)"/>
-  <g transform="translate(64,64)">
-    <path d="M-35,-25 Q-25,-35 -10,-32 Q5,-38 20,-30 Q35,-25 40,-10 Q38,5 35,20 Q30,35 15,38 Q0,40 -15,35 Q-30,30 -38,15 Q-40,0 -35,-15 Z"
-          fill="url(#stoneGrad)" stroke="#0a0a0a" stroke-width="1"/>
-    <ellipse cx="-15" cy="-10" rx="8" ry="5" fill="#1f1f1f" opacity="0.6"/>
-    <ellipse cx="12" cy="-18" rx="6" ry="4" fill="#1f1f1f" opacity="0.6"/>
-    <ellipse cx="20" cy="8" rx="7" ry="6" fill="#1f1f1f" opacity="0.6"/>
-    <ellipse cx="-8" cy="15" rx="5" ry="7" fill="#1f1f1f" opacity="0.6"/>
-  </g>
-  <g transform="translate(64,64)">
-    <path d="M-20,-15 Q-10,0 0,10 Q8,20 15,30" stroke="url(#crackGrad)" stroke-width="3" fill="none" opacity="0.9"/>
-    <path d="M-30,-5 Q-15,5 -5,8" stroke="url(#crackGrad)" stroke-width="2" fill="none" opacity="0.8"/>
-    <path d="M10,-20 Q18,-5 25,5" stroke="url(#crackGrad)" stroke-width="2" fill="none" opacity="0.8"/>
-  </g>
-  <g transform="translate(64,64)">
-    <ellipse cx="0" cy="15" rx="12" ry="8" fill="url(#lavaGrad)" opacity="0.9"/>
-    <circle cx="-18" cy="-8" r="4" fill="url(#lavaGrad)" opacity="0.8"/>
-    <ellipse cx="22" cy="-5" rx="5" ry="3" fill="url(#lavaGrad)" opacity="0.8"/>
-  </g>
-</svg>
-EOF
 }
 
 uninstall_vkbasalt() {
@@ -653,7 +577,7 @@ show_config_menu() {
 
     while true; do
         local shader_count=0
-        local builtin_count=4  # CAS, FXAA, SMAA, DLS
+        local builtin_count=4
         local external_count=0
 
         if [ -d "$SHADER_PATH" ] && [ "$(ls -A $SHADER_PATH 2>/dev/null)" ]; then
@@ -799,10 +723,8 @@ configure_fxaa() {
     if [ ! -z "$sp" ]; then
         local spf=$(awk "BEGIN {printf \"%.2f\", $sp / 100}")
 
-        # CORRECTION : Calcul plus robuste pour Edge Threshold
-        local e=23  # Valeur par défaut pour 0.125
+        local e=23
         if [ ! -z "$edge" ]; then
-            # Assure que edge est dans la plage valide (0.063 à 0.333)
             local safe_edge=$(awk "BEGIN {
                 val = $edge
                 if (val < 0.063) val = 0.063
