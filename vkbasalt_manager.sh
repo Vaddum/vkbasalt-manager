@@ -420,8 +420,9 @@ manage_profiles() {
     local choice=$(zenity --list --title="Profile Management" \
         --text="Manage VkBasalt configuration profiles:" \
         --column="Action" --column="Description" \
-        --width=500 --height=350 \
-        "Create Profile" "Save current configuration as profile" \
+        --width=500 --height=380 \
+        "Create Profile" "Save current configuration as new profile" \
+        "Save Profile" "Save changes to currently loaded profile" \
         "Load Profile" "Load an existing profile" \
         "Delete Profile" "Remove a profile" \
         "Export Profile" "Export profile to file" \
@@ -436,11 +437,39 @@ manage_profiles() {
                 if [ -f "$profile_file" ]; then
                     if show_question "Profile '$profile_name' already exists. Overwrite?"; then
                         cp "$CONFIG_FILE" "$profile_file"
-                        show_info "Profile '$profile_name' updated successfully"
+                        echo "$profile_name" > "${USER_HOME}/.config/vkBasalt/.current_profile"
+                        log_info "Profile '$profile_name' overwritten and set as current"
+                        show_info "Profile '$profile_name' updated and set as current profile"
                     fi
                 else
                     cp "$CONFIG_FILE" "$profile_file"
-                    show_info "Profile '$profile_name' created successfully"
+                    echo "$profile_name" > "${USER_HOME}/.config/vkBasalt/.current_profile"
+                    log_info "Profile '$profile_name' created and set as current"
+                    show_info "Profile '$profile_name' created and set as current profile"
+                fi
+            fi
+            ;;
+        "Save Profile")
+            local current_profile=""
+            if [ -f "${USER_HOME}/.config/vkBasalt/.current_profile" ]; then
+                current_profile=$(cat "${USER_HOME}/.config/vkBasalt/.current_profile" 2>/dev/null)
+            fi
+
+            if [ ! -z "$current_profile" ] && [ -f "${PROFILES_DIR}/${current_profile}.conf" ]; then
+                if show_question "Save current configuration to profile '$current_profile'?"; then
+                    cp "$CONFIG_FILE" "${PROFILES_DIR}/${current_profile}.conf"
+                    log_info "Changes saved to profile '$current_profile'"
+                    show_info "Changes saved to profile '$current_profile'"
+                fi
+            else
+                if show_question "No current profile set. Create a new profile with current configuration?"; then
+                    local profile_name=$(zenity --entry --title="Save as New Profile" --text="Enter profile name:" --width=350)
+                    if [ ! -z "$profile_name" ]; then
+                        cp "$CONFIG_FILE" "${PROFILES_DIR}/${profile_name}.conf"
+                        echo "$profile_name" > "${USER_HOME}/.config/vkBasalt/.current_profile"
+                        log_info "New profile '$profile_name' created and set as current"
+                        show_info "New profile '$profile_name' created and set as current profile"
+                    fi
                 fi
             fi
             ;;
@@ -458,9 +487,10 @@ manage_profiles() {
                 "${profiles[@]}" 2>/dev/null)
 
             if [ ! -z "$selected_profile" ]; then
-                backup_config
                 cp "${PROFILES_DIR}/${selected_profile}.conf" "$CONFIG_FILE"
-                show_info "Profile '$selected_profile' loaded successfully"
+                echo "$selected_profile" > "${USER_HOME}/.config/vkBasalt/.current_profile"
+                log_info "Profile '$selected_profile' loaded and set as current"
+                show_info "Profile '$selected_profile' loaded and set as current profile"
             fi
             ;;
         "Delete Profile")
@@ -478,8 +508,21 @@ manage_profiles() {
 
             if [ ! -z "$selected_profile" ]; then
                 if show_question "Delete profile '$selected_profile'?\n\nThis action cannot be undone."; then
+                    local current_profile=""
+                    if [ -f "${USER_HOME}/.config/vkBasalt/.current_profile" ]; then
+                        current_profile=$(cat "${USER_HOME}/.config/vkBasalt/.current_profile" 2>/dev/null)
+                    fi
+
                     rm -f "${PROFILES_DIR}/${selected_profile}.conf"
-                    show_info "Profile '$selected_profile' deleted successfully"
+
+                    if [ "$current_profile" = "$selected_profile" ]; then
+                        rm -f "${USER_HOME}/.config/vkBasalt/.current_profile"
+                        log_info "Deleted current profile '$selected_profile'"
+                        show_info "Profile '$selected_profile' deleted (was current profile)"
+                    else
+                        log_info "Profile '$selected_profile' deleted"
+                        show_info "Profile '$selected_profile' deleted successfully"
+                    fi
                 fi
             fi
             ;;
@@ -945,10 +988,19 @@ show_config_menu() {
         shader_count=$((builtin_count + external_count))
 
         local status_text=""
+        local current_profile=""
+        if [ -f "${USER_HOME}/.config/vkBasalt/.current_profile" ]; then
+            current_profile=$(cat "${USER_HOME}/.config/vkBasalt/.current_profile" 2>/dev/null)
+        fi
+
         if [ $external_count -gt 0 ]; then
             status_text="VkBasalt ready! ($shader_count shaders: $builtin_count built-in + $external_count external)"
         else
             status_text="VkBasalt ready! ($builtin_count built-in shaders available)"
+        fi
+
+        if [ ! -z "$current_profile" ]; then
+            status_text="$status_text • Profile: $current_profile"
         fi
 
         local active_effects=""
