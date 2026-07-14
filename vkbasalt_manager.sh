@@ -375,6 +375,7 @@ get_shader_description() {
         "nostalgia"|"Nostalgia") echo "🟠 Nostalgia - Retro gaming visual style emulation" ;;
         "sepia"|"Sepia") echo "🟢 Sepia - Vintage sepia tone effect" ;;
         "smartsharp"|"SmartSharp"|"Smartsharp") echo "🔴 SmartSharp - Depth-aware intelligent sharpening" ;;
+        "supereagle"|"SuperEagle") echo "🟠 SuperEagle - Diagonal smoothing filter for pixel art, keeps text sharp" ;;
         "technicolor"|"Technicolor") echo "🟢 Technicolor - Classic vibrant film process look" ;;
         "tonemap"|"Tonemap") echo "🟢 Tonemap - Comprehensive tone mapping controls" ;;
         "vibrance"|"Vibrance") echo "🟢 Vibrance - Smart saturation enhancement tool" ;;
@@ -408,6 +409,7 @@ get_display_name() {
         "nostalgia") echo "Nostalgia" ;;
         "sepia") echo "Sepia" ;;
         "smartsharp") echo "SmartSharp" ;;
+        "supereagle") echo "SuperEagle" ;;
         "technicolor") echo "Technicolor" ;;
         "tonemap") echo "Tonemap" ;;
         "vibrance") echo "Vibrance" ;;
